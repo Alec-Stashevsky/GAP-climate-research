@@ -1,0 +1,45 @@
+---
+title: "01 - APA Attendence Geocoding"
+author: "Alec Stashevsky"
+date: "6/20/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+library(readxl)
+library(ggmap)
+```
+
+## Import Attendence Data
+
+```{r Import}
+# Import the Attendence data
+path.in <- "C:/Users/alec.stashevsky/Desktop/Registrant Locations 2018-2020.xlsx"
+
+nyc.2018.raw <- read_xlsx(path.in, sheet = "2018 NYC") %>% setDT()
+sf.2019.raw <- read_xlsx(path.in, sheet = "2019 SF") %>% setDT()
+phl.2020.raw <- read_xlsx(path.in, sheet = "2020 PHL") %>% setDT()
+
+# Clean up unneccesary columns - total records summary
+nyc.2018 <- nyc.2018.raw[,1:(length(nyc.2018.raw)-2)]
+sf.2019 <- sf.2019.raw[,1:(length(sf.2019.raw)-2)]
+phil.2020 <- phl.2020.raw[,1:(length(phl.2020.raw)-2)]
+```
+
+## Add geospatial coordinates
+```{r Geocode}
+# This chunk requires a user-registration to Google's API platform
+# This may present problems when running the code on your local machine
+
+# Covention Center Addresses
+## Pensylvania Convention center - PHiliadelphia
+## Moscone Center - San Franscisco
+## Javitz Center - New York
+centers <- c("1101 Arch St, Philadelphia, PA 19107",
+             "747 Howard St, San Francisco, CA 94103",
+             "429 11th Ave, New York, NY 10001")
+```
+
