@@ -1,7 +1,7 @@
 ---
 title: "01 - APA Attendence Geocoding"
 author: "Alec Stashevsky"
-date: "6/20/2020"
+date: `r format(Sys.time(), "%d %B, %Y")`
 output: pdf_document
 ---
 
@@ -10,36 +10,167 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(data.table)
 library(readxl)
-library(ggmap)
+library(openxlsx)
+library(ggmap) # Need to cite 
 ```
 
+
+##################################   NOTES   ############################
+1. Need to make sure all CITY == NEW YORK is coded as NEW YORK CITY
+    
 ## Import Attendence Data
 
 ```{r Import}
-# Import the Attendence data
-path.in <- "C:/Users/alec.stashevsky/Desktop/Registrant Locations 2018-2020.xlsx"
+# Import the Attendance data
+path.in <-"C:/Users/alec.stashevsky/Desktop/Registrant Locations 2018-2020.xlsx"
 
 nyc.2018.raw <- read_xlsx(path.in, sheet = "2018 NYC") %>% setDT()
 sf.2019.raw <- read_xlsx(path.in, sheet = "2019 SF") %>% setDT()
 phl.2020.raw <- read_xlsx(path.in, sheet = "2020 PHL") %>% setDT()
 
-# Clean up unneccesary columns - total records summary
+# Clean up unnecessary columns - total records summary
 nyc.2018 <- nyc.2018.raw[,1:(length(nyc.2018.raw)-2)]
 sf.2019 <- sf.2019.raw[,1:(length(sf.2019.raw)-2)]
-phil.2020 <- phl.2020.raw[,1:(length(phl.2020.raw)-2)]
+phl.2020 <- phl.2020.raw[,1:(length(phl.2020.raw)-2)]
 ```
 
-## Add geospatial coordinates
-```{r Geocode}
-# This chunk requires a user-registration to Google's API platform
-# This may present problems when running the code on your local machine
-
-# Covention Center Addresses
-## Pensylvania Convention center - PHiliadelphia
-## Moscone Center - San Franscisco
+## Prep data for Google Geocoding API
+```{r Geocode Prep}
+# Convention Center Addresses
+## Pennsylvania Convention center - Philadelphia
+## Moscone Center - San Francisco
 ## Javitz Center - New York
-centers <- c("1101 Arch St, Philadelphia, PA 19107",
+convention.address <- c("1101 Arch St, Philadelphia, PA 19107",
              "747 Howard St, San Francisco, CA 94103",
              "429 11th Ave, New York, NY 10001")
+
+# Fix "Not Applicable" values to true NAs
+## Gets indexes
+nyc.na <- which(nyc.2018$STATE == "NOT APPLICABLE", arr.ind = TRUE)
+sf.na <- which(sf.2019$STATE == "NOT APPLICABLE", arr.ind = TRUE)
+phl.na <- which(phl.2020$STATE == "NOT APPLICABLE", arr.ind = TRUE)
+
+## Replace with NA
+nyc.2018[nyc.na]$STATE <- NA
+sf.2019[sf.na]$STATE <- NA
+phl.2020[phl.na]$STATE <- NA
+
+# Now lets begin cleaning minor issues that errors in Google API
+
+
+# Correct Data entry error detected on initial Google API run
+## Mostly city names that were misspelled
+
+### NYC
+nyc.2018[CITY == "IKAAN"]$CITY <- "Iksan"
+nyc.2018[CITY == "Queron"]$CITY <- "Quezon"
+nyc.2018[CITY == "Boeke"]$CITY <- "Boekel"
+nyc.2018[CITY == "Not Applicable"]$CITY <- NA
+
+### SF
+sf.2019[CITY == "Godoy Cruz"]$CITY <- "Godoy Cruz"
+sf.2019[CITY == "Burlingame"]$CITY <- "Burlingame"
+sf.2019[CITY == "Ska"]$CITY <- "Skå"
+
+## PHL is good to go!
 ```
 
+```{r Geocode Location Set}
+# Prep single location column to feed Google API
+## Remove US country name due to Google API issues
+nyc.prep <- nyc.2018[,
+                     location :=
+                       ifelse(is.na(STATE),
+                              paste(CITY, COUNTRY, sep = ", "),
+                              ifelse(COUNTRY == "United States",
+                                     paste(CITY, STATE, "US", sep =", "),
+                                     paste(CITY, STATE, COUNTRY, sep = ", ")))]
+
+sf.prep <- sf.2019[, 
+                     location :=
+                       ifelse(is.na(STATE),
+                              paste(CITY, COUNTRY, sep = ", "),
+                              ifelse(COUNTRY == "United States",
+                                     paste(CITY, STATE, "US", sep =", "),
+                                     paste(CITY, STATE, COUNTRY, sep = ", ")))]
+phl.prep <- phl.2020[, 
+                     location :=
+                       ifelse(is.na(STATE),
+                              paste(CITY, COUNTRY, sep = ", "),
+                              ifelse(COUNTRY == "United States",
+                                     paste(CITY, STATE, "US", sep =", "),
+                                     paste(CITY, STATE, COUNTRY, sep = ", ")))]
+
+# There are some attendees who only have a country coded
+nyc.fix <- which(nyc.prep$location %like% "^NA, ", arr.ind = TRUE)
+sf.fix <- which(sf.prep$location %like% "^NA, ", arr.ind = TRUE)
+phl.fix <- which(phl.prep$location %like% "^NA, ", arr.ind = TRUE)
+
+# Overwrite location for entries with no city and state
+nyc.prep[nyc.fix]$location <- nyc.prep[nyc.fix]$COUNTRY
+sf.prep[sf.fix]$location <- sf.prep[sf.fix]$COUNTRY
+phl.prep[phl.fix]$location <- phl.prep[phl.fix]$COUNTRY
+
+# Check NA processing for correct location 
+nyc.prep[is.na(CITY) & is.na(STATE)] # 1 Argentina, 1 Finland, 47 US
+sf.prep[is.na(CITY) & is.na(STATE)] # 1 Brazil, Finland, Chile ; 51 US
+phl.prep[is.na(CITY) & is.na(STATE)] #1 Canada, 1 Chile, 21 US
+
+############################ QUESTIONS FOR JOSH ###############################
+
+# We need to check how Google API handles this, may need to drop
+# There are a lot of Area X Rep inputs to the city - are these APA districts
+# DISCUSS WITH JOSH
+```
+
+## Geocode
+```{r Geocoding NYC}
+# Geocode with Google Geocoding API - this will take some time
+nyc.geo <- mutate_geocode(nyc.prep, location = location)
+
+# Check errors
+nyc.geo[is.na(lat) | is.na(lon)]
+```
+
+```{r Geocoding SF}
+# Geocode with Google Geocoding API - this will take some time
+sf.geo <- mutate_geocode(sf.prep, location = location)
+
+# Check errors
+view(sf.geo[is.na(lat) | is.na(lon)])
+```
+
+```{r Geocoding PHL}
+# Geocode with Google Geocoding API - this will take some time
+phl.geo <- mutate_geocode(phl.prep, location = location)
+
+# Check errors
+phl.geo[is.na(lat) | is.na(lon)]
+```
+
+```{r Convention Centers}
+# Create small data set with convention geodata
+convention.names <- c("Pennsylvania Convention center",
+                       "Moscone Center", "Javitz Center")
+convention.cities <- c("Philadelphia", "San Francisco", "New York City")        
+convention.states <- c("PA", "CA", "NY")
+convention.countries <- rep("United States", 3)
+
+conventions <- data.table(convention.names,
+                          convention.cities,
+                          convention.states,
+                          convention.countries,
+                          convention.address)
+  
+# Fix columns names to match attendance data
+names(conventions) <- c("Name", colnames(nyc.prep)[2:5])
+
+# Geocode conventions centers
+conventions.geo <- mutate_geocode(conventions, location = location)
+```
+
+```{r Final Write}
+geo.sets <- list("NYC 2018" = nyc.geo, "SF 2019" = sf.geo, "PHL 2020" = phl.geo, "Convention Centers" = conventions.geo)
+write.xlsx(geo.sets,
+           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx")
+```
