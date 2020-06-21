@@ -12,24 +12,82 @@ library(data.table)
 library(readxl)
 library(openxlsx)
 library(ggmap) # Need to cite 
+library(maps)
+library(rgeos)
+library(maptools)
+library(geosphere)
+library(plyr)
+library(mefa)
+library(leaflet)
+rm(list = ls()) # Clean R Environment
 ```
 
-## R Markdown
+## Import Geocoded APA Attendence Data
+```{r Import}
+path.in <-"C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx"
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+nyc <- read_xlsx(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_xlsx(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_xlsx(path.in, sheet = "PHL 2020") %>% setDT()
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>% setDT()
 ```
 
-## Including Plots
+## Plot Attendence Commute
+```{r Geospatial Plotting}
+# Pull origin coordinates and frequency - reduce duplicates
+# ************************ NEED TO FINE TUNE THE DE-DUPE
+nyc.origin <- unique(nyc[, Frequency := .N, by = .(CITY, STATE, COUNTRY)])
 
-You can also embed plots, for example:
+# Create Javitz center coordinate vector
+nyc.dest <- as.numeric(conventions[STATE =="NY", c('lon', 'lat')])
+nyc.dest.lon <- rep(nyc.dest[1], 502)
+nyc.dest.lat <- rep(nyc.dest[2], 502)
+nyc.dest.coord <- as.matrix(cbind(nyc.dest.lon, nyc.dest.lat))
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# sf.dest <- as.numeric(conventions[STATE =="CA", c('lon', 'lat')])
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Add a point on the map for each airport:
+# Lets add the cex value later*************************************
+points(x=nyc.origin$lon,
+       y=nyc.origin$lat,
+       pch=19, cex = nyc.origin$Frequency/900,
+       col = rgb(red = 1, green = 0, blue = 0, alpha = 0.1))
+# lines(sf.dest, nyc.dest, col="orange")
+
+col.1 <- adjustcolor("orange red", alpha=0.4)
+col.2 <- adjustcolor("orange", alpha=0.4)
+edge.pal <- colorRampPalette(c(col.1, col.2), alpha = TRUE)
+edge.col <- edge.pal(100)
+
+
+# test <- gcIntermediate(nyc.dest, sf.dest, 500, addStartEnd = TRUE, breakAtDateLine = TRUE)
+# lines(test, col="orange")
+
+# Calculate 200 intermediate points on Great Circle between origin/destination
+## We need to build a for loop and get intermediate points by each row
+for (i in 1:nrow(nyc.origin)){
+  
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          500,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+  
+  edge.ind <- round(100*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+  lines(routes, col=edge.col[edge.ind], lwd=edge.ind/3)
+}
+
+
+# calculate routes for each row
+routes = gcIntermediate(df[,c('lon1', 'lat1')], df[,c('lon2', 'lat2')], 200, breakAtDateLine = FALSE, addStartEnd = TRUE, sp=TRUE)
+# fortify to dataframe
+fortifiedroutes = fortify.SpatialLinesDataFrame(routes)
+  
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

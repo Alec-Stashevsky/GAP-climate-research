@@ -17,7 +17,11 @@ library(ggmap) # Need to cite
 
 ##################################   NOTES   ############################
 1. Need to make sure all CITY == NEW YORK is coded as NEW YORK CITY
-    
+2. Need to rerun NYC and SF Geocode with city fixes
+3. Change read_xlsx to read_excel so it can be more compatible for users
+
+* ASK JOSH ABOUT TRAVEL DISTANCE CALCULATION
+
 ## Import Attendence Data
 
 ```{r Import}
