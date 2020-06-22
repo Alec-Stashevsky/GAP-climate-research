@@ -14,13 +14,16 @@ Here are some teasers of meeting attendee flight-network model:
 
 ![NYC 2018 APA Annaul Meeting](/images/NYC2018.jpg)
 
+<br />
+<br />
 
 ## Moscone Center 2019 APA Annual Meeting
 
 ![SF 2019 APA Annaul Meeting](/images/SF2019.jpg)
 
+<br />
+<br />
 
-## Pensylvania Convention Center 2020 APA Annual Meeting
-### (Hypothetical Scenario)
+## Pensylvania Convention Center 2020 APA Annual Meeting (Counterfactural Scenario)
 
 ![PHL 2020 APA Annaul Meeting](/images/PHL2020.jpg)
