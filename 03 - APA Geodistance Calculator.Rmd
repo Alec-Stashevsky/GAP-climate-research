@@ -11,6 +11,7 @@ library(readxl)
 library(openxlsx)
 library(tidyverse)
 library(data.table)
+library(geosphere)
 rm(list = ls()) # Clean R Environment
 ```
 
@@ -45,5 +46,14 @@ phl.gdist <- as.data.table(distGeo(phl[, c('lon', 'lat')], phl.dest))
 final.nyc <- cbind(nyc, Meters = nyc.gdist)
 final.sf <- cbind(sf, Meters = sf.gdist)
 final.phl <- cbind(phl, Meters = phl.gdist)
+```
+
+## Descriptive Statistics
+```{r Geodistance Stats}
+summary(final.nyc$Meters.V1)
+summary(final.sf$Meters.V1)
+summary(final.phl$Meters.V1)
+
+# For some reason there is a single NA values in each set
 ```
 
