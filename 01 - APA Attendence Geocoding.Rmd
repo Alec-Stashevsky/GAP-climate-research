@@ -174,7 +174,11 @@ conventions.geo <- mutate_geocode(conventions, location = location)
 ```
 
 ```{r Final Write}
-geo.sets <- list("NYC 2018" = nyc.geo, "SF 2019" = sf.geo, "PHL 2020" = phl.geo, "Convention Centers" = conventions.geo)
+geo.sets <- list("NYC 2018" = nyc.geo,
+                 "SF 2019" = sf.geo,
+                 "PHL 2020" = phl.geo,
+                 "Convention Centers" = conventions.geo)
+
 write.xlsx(geo.sets,
            file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx")
 ```

@@ -797,3 +797,12 @@ title(main = "APA Annual Conference Flight Network",
 # End pdf export
 dev.off()
 ```
+
+```{r Write Geo-Unique Frequncy Data}
+origin.sets <- list("NYC 2018" = nyc.origin,
+                 "SF 2019" = sf.origin,
+                 "PHL 2020" = phl.origin)
+
+write.xlsx(origin.sets,
+           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx")
+```
