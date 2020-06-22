@@ -17,11 +17,6 @@ library(rgeos)
 library(maptools)
 library(geosphere)
 library(plyr)
-library(mefa)
-library(leaflet)
-library(sp)
-library(mtext)
-library(viridis)
 rm(list = ls()) # Clean R Environment
 ```
 

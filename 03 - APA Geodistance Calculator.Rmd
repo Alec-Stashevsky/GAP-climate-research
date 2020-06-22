@@ -1,0 +1,49 @@
+---
+title: "03 - APA Geodistance Calculator"
+author: "Alec Stashevsky"
+date: "6/21/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(openxlsx)
+library(tidyverse)
+library(data.table)
+rm(list = ls()) # Clean R Environment
+```
+
+## Import Geo-unique Data
+```{r Import}
+path.in <-"C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx"
+
+path.convention <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx"
+
+
+nyc <- read_xlsx(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_xlsx(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_xlsx(path.in, sheet = "PHL 2020") %>% setDT()
+conventions <- read_xlsx(path.convention, sheet = "Convention Centers") %>%
+  setDT()
+```
+
+
+## Calculate Geodistance to Convention Center
+```{r Geodistance}
+# Get convention center coordinates
+nyc.dest <- as.numeric(conventions[STATE =="NY", c('lon', 'lat')])
+sf.dest <- as.numeric(conventions[STATE =="CA", c('lon', 'lat')])
+phl.dest <- as.numeric(conventions[STATE =="PA", c('lon', 'lat')])
+
+# Calculate Geodistance in meters - with ellipsoidal method
+nyc.gdist <- as.data.table(distGeo(nyc[, c('lon', 'lat')], nyc.dest))
+sf.gdist <- as.data.table(distGeo(sf[, c('lon', 'lat')], sf.dest))
+phl.gdist <- as.data.table(distGeo(phl[, c('lon', 'lat')], phl.dest))
+
+# Merge onto Geo-unique data
+final.nyc <- cbind(nyc, Meters = nyc.gdist)
+final.sf <- cbind(sf, Meters = sf.gdist)
+final.phl <- cbind(phl, Meters = phl.gdist)
+```
+
