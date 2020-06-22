@@ -1,0 +1,799 @@
+---
+title: "02 - APA Flight Network Mapping"
+author: "Alec Stashevsky"
+date: `r format(Sys.time(), "%d %B, %Y")`
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+library(readxl)
+library(openxlsx)
+library(ggmap) # Need to cite 
+library(maps)
+library(rgeos)
+library(maptools)
+library(geosphere)
+library(plyr)
+library(mefa)
+library(leaflet)
+library(sp)
+library(mtext)
+library(viridis)
+rm(list = ls()) # Clean R Environment
+```
+
+## Import Geocoded APA Attendence Data
+```{r Import}
+path.in <-"C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx"
+
+nyc <- read_xlsx(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_xlsx(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_xlsx(path.in, sheet = "PHL 2020") %>% setDT()
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>% setDT()
+```
+
+## Plot Flight Network
+
+### NYC 2018
+```{r Flight Network Plot NYC}
+# Initialize write to pdf
+pdf(file = "APA Flight Netowrks.pdf")
+# Pull origin coordinates and frequency - reduce duplicates
+# ************************ NEED TO FINE TUNE THE DE-DUPE
+nyc.origin <- unique(nyc[, Frequency := .N, by = .(lon, lat)],
+                     by = c('lon', 'lat'))
+
+# Create Javitz center coordinate vector
+nyc.dest <- as.numeric(conventions[STATE =="NY", c('lon', 'lat')])
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Add a point on the map for each airport:
+# Lets add the cex value later*************************************
+points(x=nyc.origin$lon,
+       y=nyc.origin$lat,
+       pch=19, cex = log(nyc.origin$Frequency)/50,
+       col = rgb(red = 1, green = .69, blue = 0, alpha = 0.3))
+# Parameterize color of lines
+col.1 <- adjustcolor("orange red", alpha=0.18)
+col.2 <- adjustcolor("orange", alpha=0.3)
+edge.pal <- colorRampPalette(c(col.1, col.2), alpha = TRUE)
+edge.col <- edge.pal(100)
+
+# Calculate 1000 intermediate points on Great Circle between origin/destination
+## We need to build a for loop and get intermediate points by individual trip
+## ISSUE: Loop getting stopped out by warnings limit
+## WORKAROUND: Increment by 200 in separate for-loops - loops must be separate
+## Significantly increases the amount of time to run the code
+for (i in 1:200){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 201:400){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 401:600){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 601:800){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 801:1000){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1001:1200){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1201:1400){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1401:1600){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1601:1800){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1801:2000){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2001:2200){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2201:2400){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2401:2600){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2601:2800){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2801:3000){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 3001:3200){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 3201:3400){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 3401:3600){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 3601:nrow(nyc.origin)){
+  routes = gcIntermediate(c(nyc.origin[i, ]$lon,
+                            nyc.origin[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.origin[i,]$Frequency / max(nyc.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+
+# Add Flight plot aesthetics
+title(main = "APA Annual Conference Flight Network",
+      sub = "NYC 2018", col.main = "white", col.sub = "white")
+```
+
+### SF 2019
+```{r Flight Network Plot SF}
+# Pull origin coordinates and frequency - reduce duplicates
+# ************************ NEED TO FINE TUNE THE DE-DUPE
+sf.origin <- unique(sf[, Frequency := .N, by = .(lon, lat)],
+                     by = c('lon', 'lat'))
+sf.origin.us <- sf.origin[COUNTRY == "United States" |
+                            COUNTRY == "US" |
+                            STATE %in% state.abb]
+
+# Create Moscone center coordinate vector
+sf.dest <- as.numeric(conventions[STATE =="CA", c('lon', 'lat')])
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Add a point on the map for each airport:
+# Lets add the cex value later*************************************
+points(x=sf.origin$lon,
+       y=sf.origin$lat,
+       pch=19, cex = log(sf.origin$Frequency)/50,
+       # Lets code sf as cerulean blue
+       col = rgb(red = 26/255, green = 1, blue = 171/255, alpha = 0.2))
+# Parameterize color of lines
+col.1 <- adjustcolor("dodgerblue2", alpha=0.2)
+col.2 <- adjustcolor("cyan", alpha=0.18)
+edge.pal <- colorRampPalette(c(col.1, col.2), alpha = TRUE)
+edge.col <- edge.pal(100)
+
+# Calculate 200 intermediate points on Great Circle between origin/destination
+## We need to build a for loop and get intermediate points by each row
+
+for (i in 1:200){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 201:400){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 401:600){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 601:800){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 801:1000){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1001:1200){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1201:1400){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1401:1600){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1601:1800){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1801:2000){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2001:2200){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2201:2400){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2401:2600){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2601:2800){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2801:3000){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 3001:nrow(sf.origin)){
+  routes = gcIntermediate(c(sf.origin[i, ]$lon,
+                            sf.origin[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(170*sf.origin[i,]$Frequency / max(sf.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+# Add Flight plot aesthetics
+title(main = "APA Annual Conference Flight Netowrk",
+      sub = "SF 2019", col.main = "white", col.sub = "white")
+```
+
+### PHL 2020
+```{r Flight Network Plot PHL}
+# Pull origin coordinates and frequency - reduce duplicates
+# ************************ NEED TO FINE TUNE THE DE-DUPE
+phl.origin <- unique(phl[, Frequency := .N, by = .(lon, lat)],
+                     by = c('lon', 'lat'))
+
+# US Only if we want to subplot
+phl.origin.us <- phl.origin[COUNTRY == "United States" |
+                            COUNTRY == "US" |
+                            STATE %in% state.abb]
+
+# Create Moscone center coordinate vector
+phl.dest <- as.numeric(conventions[STATE =="PA", c('lon', 'lat')])
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Add a point on the map for each airport:
+# Lets add the cex value later*************************************
+points(x=phl.origin$lon,
+       y=phl.origin$lat,
+       pch=19, cex = log(phl.origin$Frequency)/50,
+       # Lets code phl as cerulean blue
+       col = rgb(red = 1, green = 107/255, blue = 165/255, alpha = 0.4))
+# Parameterize color of lines
+col.1 <- adjustcolor("slateblue", alpha=0.22)
+col.2 <- adjustcolor("skyblue3", alpha=0.19)
+edge.pal <- colorRampPalette(c(col.1, col.2), alpha = TRUE)
+edge.col <- edge.pal(100)
+
+# Calculate 200 intermediate points on Great Circle between origin/destination
+## We need to build a for loop and get intermediate points by each row
+
+for (i in 1:200){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 201:400){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 401:600){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 601:800){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 801:1000){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1001:1200){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1201:1400){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1401:1600){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1601:1800){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 1801:2000){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+for (i in 2001:nrow(phl.origin)){
+  routes = gcIntermediate(c(phl.origin[i, ]$lon,
+                            phl.origin[i, ]$lat),
+                          phl.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(250*phl.origin[i,]$Frequency / max(phl.origin$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+# Add Flight plot aesthetics
+title(main = "APA Annual Conference Flight Network",
+      sub = "PHL 2020 (Pre-cancellation)", col.main = "white", col.sub = "white")
+
+# End pdf export
+dev.off()
+```
