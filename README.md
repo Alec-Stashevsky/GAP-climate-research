@@ -24,6 +24,8 @@ Here are some teasers of meeting attendee flight-network model:
 <br />
 <br />
 
-## Pensylvania Convention Center 2020 APA Annual Meeting (Counterfactural Scenario)
+## Pensylvania Convention Center 2020 APA Annual Meeting 
+
+### This is a Counterfactural Scenario
 
 ![PHL 2020 APA Annaul Meeting](/images/PHL2020.jpg)
