@@ -10,4 +10,13 @@ The research is currently in progress and supported by a team of pyschiatirsts i
 
 Here are some teasers of meeting attendee flight-network model:
 
+Javitz Center 2018 APA Annual Meeting
 ![NYC 2018 APA Annaul Meeting](/images/NYC2018.jpg)
+
+
+Moscone Center 2019 APA Annual Meeting
+![SF 2019 APA Annaul Meeting](/images/SF2019.jpg)
+
+
+Pensylvania Convention Center 2020 APA Annual Meeting (Hypothetical Scenario)
+![PHL 2020 APA Annaul Meeting](/images/PHL2020.jpg)
