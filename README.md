@@ -10,4 +10,4 @@ The research is currently in progress and supported by a team of pyschiatirsts i
 
 Here are some teasers of meeting attendee flight-network model:
 
-![NYC 2018 APA Annaul Meeting](/reference images/NYC 2018.jpg)
+![NYC 2018 APA Annaul Meeting](/images/NYC2018.jpg)
