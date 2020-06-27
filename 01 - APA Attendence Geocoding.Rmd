@@ -28,9 +28,9 @@ library(ggmap) # Need to cite
 # Import the Attendance data
 path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Data/Registrant Locations 2018-2020.xlsx"
 
-nyc.2018.raw <- read_xlsx(path.in, sheet = "2018 NYC") %>% setDT()
-sf.2019.raw <- read_xlsx(path.in, sheet = "2019 SF") %>% setDT()
-phl.2020.raw <- read_xlsx(path.in, sheet = "2020 PHL") %>% setDT()
+nyc.2018.raw <- read_excel(path.in, sheet = "2018 NYC") %>% setDT()
+sf.2019.raw <- read_excel(path.in, sheet = "2019 SF") %>% setDT()
+phl.2020.raw <- read_excel(path.in, sheet = "2020 PHL") %>% setDT()
 
 # Clean up unnecessary columns - total records summary
 nyc.2018 <- nyc.2018.raw[,1:(length(nyc.2018.raw)-2)]
@@ -123,7 +123,7 @@ phl.prep[is.na(CITY) & is.na(STATE)] #1 Canada, 1 Chile, 21 US
 ############################ QUESTIONS FOR JOSH ###############################
 
 # We need to check how Google API handles this, may need to drop
-# There are a lot of Area X Rep inputs to the city - are these APA districts
+# There are a lot of Area X Rep inputs to the city - are these APA districts??
 # DISCUSS WITH JOSH
 ```
 

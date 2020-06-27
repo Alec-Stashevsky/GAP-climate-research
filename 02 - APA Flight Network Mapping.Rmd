@@ -24,9 +24,9 @@ rm(list = ls()) # Clean R Environment
 ```{r Import}
 path.in <-"C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx"
 
-nyc <- read_xlsx(path.in, sheet = "NYC 2018") %>% setDT()
-sf <- read_xlsx(path.in, sheet = "SF 2019") %>% setDT()
-phl <- read_xlsx(path.in, sheet = "PHL 2020") %>% setDT()
+nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
 conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>% setDT()
 ```
 
