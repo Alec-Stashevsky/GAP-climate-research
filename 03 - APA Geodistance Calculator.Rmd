@@ -17,7 +17,7 @@ rm(list = ls()) # Clean R Environment
 
 ## Import Geo-unique Data
 ```{r Import}
-path.in <-"C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx"
+path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx"
 
 path.convention <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx"
 
@@ -57,3 +57,13 @@ summary(final.phl$Meters.V1)
 # For some reason there is a single NA values in each set
 ```
 
+## Write Excel Copy
+### Intended for subsequent analysis w/o R
+```{r Write Geo-Unique Frequncy Data}
+final.sets <- list("NYC 2018" = final.nyc,
+                 "SF 2019" = final.sf,
+                 "PHL 2020" = final.phl)
+
+write.xlsx(final.sets,
+           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx")
+```
