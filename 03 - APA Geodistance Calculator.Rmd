@@ -15,6 +15,7 @@ library(geosphere)
 rm(list = ls()) # Clean R Environment
 ```
 
+
 ## Import Geo-unique Data
 ```{r Import}
 path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx"
@@ -47,6 +48,7 @@ final.nyc <- cbind(nyc, Meters = nyc.gdist)
 final.sf <- cbind(sf, Meters = sf.gdist)
 final.phl <- cbind(phl, Meters = phl.gdist)
 ```
+
 
 ## Descriptive Statistics
 ```{r Geodistance Stats}
@@ -114,6 +116,7 @@ total.table <- as.data.frame(cbind(table.names,
 # Fix headers
 colnames(total.table) <- c("Meeting ","Domestic", "International", "Total")
 ```
+
 
 ## Write Excel Copy
 ### Intended for subsequent analysis w/o R
