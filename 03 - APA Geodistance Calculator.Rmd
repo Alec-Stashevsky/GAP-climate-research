@@ -50,11 +50,69 @@ final.phl <- cbind(phl, Meters = phl.gdist)
 
 ## Descriptive Statistics
 ```{r Geodistance Stats}
+# Summary Stats for unique location 
 summary(final.nyc$Meters.V1)
 summary(final.sf$Meters.V1)
 summary(final.phl$Meters.V1)
-
 # For some reason there is a single NA values in each set
+
+# Summary Stats for total distances traveled
+summary(final.nyc$Frequency * final.nyc$Meters.V1)
+summary(final.sf$Frequency * final.sf$Meters.V1)
+summary(final.phl$Frequency * final.phl$Meters.V1)
+
+# Total distance traveled in kilometers
+total.nyc <- sum(final.nyc$Frequency * final.nyc$Meters.V1, na.rm = TRUE)/1000
+total.sf <- sum(final.sf$Frequency * final.sf$Meters.V1, na.rm = TRUE)/1000
+total.phl <- sum(final.phl$Frequency * final.phl$Meters.V1, na.rm = TRUE)/1000
+total.distance <- rbind(total.nyc, total.sf, total.phl)
+```
+
+```{r International / Domestic}
+# Filter for domestic attendees
+dom.nyc <- final.nyc[COUNTRY == "United States"]
+dom.sf <- final.sf[COUNTRY == "United States"]
+dom.phl <- final.phl[COUNTRY == "United States"]
+
+# International attendees
+intl.nyc <- final.nyc[COUNTRY != "United States"]
+intl.sf <- final.sf[COUNTRY != "United States"]
+intl.phl <- final.phl[COUNTRY != "United States"]
+
+# Summary Stats for total distances traveled
+summary(dom.nyc$Frequency * dom.nyc$Meters.V1)
+summary(dom.sf$Frequency * dom.sf$Meters.V1)
+summary(dom.phl$Frequency * dom.phl$Meters.V1)
+summary(intl.nyc$Frequency * intl.nyc$Meters.V1)
+summary(intl.sf$Frequency * intl.sf$Meters.V1)
+summary(intl.phl$Frequency * intl.phl$Meters.V1)
+
+# Total distance traveled in kilometers
+total.dom.nyc <- sum(dom.nyc$Frequency * dom.nyc$Meters.V1, na.rm = TRUE)/1000
+total.dom.sf <- sum(dom.sf$Frequency * dom.sf$Meters.V1, na.rm = TRUE)/1000
+total.dom.phl <- sum(dom.phl$Frequency * dom.phl$Meters.V1, na.rm = TRUE)/1000
+total.domestic <- rbind(total.dom.nyc, total.dom.sf, total.dom.phl)
+
+# Total distance traveled in kilometers
+total.intl.nyc <- sum(intl.nyc$Frequency *
+                        intl.nyc$Meters.V1, na.rm = TRUE)/1000
+total.intl.sf <- sum(intl.sf$Frequency *
+                       intl.sf$Meters.V1, na.rm = TRUE)/1000
+total.intl.phl <- sum(intl.phl$Frequency *
+                        intl.phl$Meters.V1, na.rm = TRUE)/1000
+
+total.international <- rbind(total.intl.nyc, total.intl.sf, total.intl.phl)
+
+# Combine distances into data.fame
+table.names <- c("NYC 2018", "SF 2019", "PHL 2020")
+
+
+total.table <- as.data.frame(cbind(table.names,
+                                   total.domestic,
+                                   total.international,
+                                   total.distance))
+# Fix headers
+colnames(total.table) <- c("Meeting ","Domestic", "International", "Total")
 ```
 
 ## Write Excel Copy
@@ -62,7 +120,8 @@ summary(final.phl$Meters.V1)
 ```{r Write Geo-Unique Frequncy Data}
 final.sets <- list("NYC 2018" = final.nyc,
                  "SF 2019" = final.sf,
-                 "PHL 2020" = final.phl)
+                 "PHL 2020" = final.phl,
+                 "Summary Statistics" = total.table)
 
 write.xlsx(final.sets,
            file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx")
