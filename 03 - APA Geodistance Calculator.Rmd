@@ -22,7 +22,6 @@ path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Res
 
 path.convention <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx"
 
-
 nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
 phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
