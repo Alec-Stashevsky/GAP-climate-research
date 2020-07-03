@@ -1,7 +1,7 @@
 ---
 title: "03 - APA Geodistance Calculator"
 author: "Alec Stashevsky"
-date: `r format(Sys.time(), "%d %B, %Y")`
+date: "June 27, 2020"
 output: pdf_document
 ---
 
@@ -119,7 +119,7 @@ total.table <- as.data.frame(cbind(table.names,
                                    total.distance,
                                    dom.prop))
 # Fix headers
-colnames(total.table) <- c("Meeting ","Domestic", "International", "Total", "% Domestic Attendance")
+colnames(total.table) <- c("Meeting Location","Domestic (km)", "International (km)", "Total (km)", "% Domestic Attendance")
 ```
 
 
@@ -129,6 +129,7 @@ colnames(total.table) <- c("Meeting ","Domestic", "International", "Total", "% D
 final.sets <- list("NYC 2018" = final.nyc,
                  "SF 2019" = final.sf,
                  "PHL 2020" = final.phl,
+                 "Convention Centers" = conventions,
                  "Summary Statistics" = total.table)
 
 write.xlsx(final.sets,

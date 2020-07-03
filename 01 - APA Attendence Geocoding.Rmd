@@ -1,7 +1,7 @@
 ---
 title: "01 - APA Attendence Geocoding"
 author: "Alec Stashevsky"
-date: `r format(Sys.time(), "%d %B, %Y")`
+date: "June 21, 2020"
 output: pdf_document
 ---
 
