@@ -4,11 +4,11 @@ This repository holds the analysis for quantifying avoided carbon impacts from t
 
 The APA is the largest psychiatric organization in the world at almost 40 thousand members. Each year approximately 15 thousand of these members attend the Annual APA Meeting held at locations across the United States.
 
-In the wake of the Coronavirus pandemic the APA canceled the 2020 Annual Meeting at the Pennsylvania Convention Center scheduled for April 25-29 and announced a virtual substitute, the *2020 APA On Demand online CME Product.*
+In the wake of the Coronavirus pandemic the APA canceled the 2020 annual meeting at the Pennsylvania Convention Center scheduled for April 25-29 and announced a virtual substitute, the *2020 APA On Demand online CME Product.*
 
 This research is currently in progress and supported by a team of psychiatrists at the think tank [Group for the Advancement of Psychiatry (GAP)](https://ourgap.org) and myself.
 
-Below are some teaser visualizations of our flight-network model for APA Annual Meeting attendees. Each point on the map represents a single attendee. The curved lines represent the geodesic distance or the path *as the crow flies* each attendee will take to arrive at the given meeting location. This width and intensity of the lines correspond to the number of people travelling along that pathway.
+Below are some teaser visualizations of our flight-network model for APA Annual Meeting attendees. Each point on the map represents a single attendee origin. The curved lines represent the geodesic distance or the path *as the crow flies* that each attendee will take to arrive at the given meeting location. The width and intensity of the lines correspond to the frequency of people travelling that pathway.
 
 ## Javitz Center 2018 APA Annual Meeting
 
@@ -35,7 +35,11 @@ Below are some teaser visualizations of our flight-network model for APA Annual 
 
 ## Optimal Meeting Location Algorithm
 
-As part of our research, I have designed an algorithm to approximate the *geometric median*, or *centroid*, of the APA's historical attendance base each year. Traditionally, this problem has been the subject of branches within computational geometry and operations research often under the labels *facility location* or the *Weber problem.*
+Clearly, in-person conferences are valuable opportunities for like-minded professionsalls to network and share their research. Yet, the avoided carbon footprint virtualizing such large meetings provides may not outweigh the value of an in-person expereience — at least some of the time.
+
+Our research leads us naturally to question the extent to which it we can mitigate the carbon footprint of such large meetings if and when they are held in-person. In fact the [International Civil Aviation Organization (ICAO)](https://www.icao.int/), an agency of the United Nations, has developed a *Green Meetings Calculator* to produce an optimal meeting location with respect to the CO<sub>2</sub> emissions.
+
+I have designed an algorithm to approximate the *geometric median*, or *centroid*, of the APA's historical attendance base each year. Traditionally, this problem has been the subject of branches within computational geometry and operations research often under the labels *facility location* or the *Weber problem.*
 
 While theoretical closed from solutions for the geometric median exist in special cases, it has been more practical to arrive at trivially-approximate solutions using iterative approaches. Moreover, our context is somewhat more complex than traditonal facility location since we must work in a non-Euclidean space to account for the ellipsoidal curvature of the Earth.
 
