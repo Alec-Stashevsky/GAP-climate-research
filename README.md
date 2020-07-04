@@ -8,7 +8,7 @@ In the wake of the Coronavirus pandemic the APA canceled the 2020 Annual Meeting
 
 This research is currently in progress and supported by a team of psychiatrists at the think tank [Group for the Advancement of Psychiatry (GAP)](https://ourgap.org) and myself.
 
-Here are some teaser visualizations of our flight-network model for APA Annual Meeting attendees:
+Below are some teaser visualizations of our flight-network model for APA Annual Meeting attendees. Each point on the map represents a single attendee. The curved lines represent the geodesic distance or the path *as the crow flies* each attendee will take to arrive at the given meeting location. This width and intensity of the lines correspond to the number of people travelling along that pathway.
 
 ## Javitz Center 2018 APA Annual Meeting
 
@@ -41,7 +41,7 @@ While theoretical closed from solutions for the geometric median exist in specia
 
 In the non-Euclidean context, the geometric median is defined by the *L<sup>1</sup>* norm and has more recently been generalized to Reimannian manifolds as the *Riemannian median*, both of which lack a closed form solution (see [Yang (2009)](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwirhdPqtrPqAhWSOn0KHRCCCvkQFjABegQIARAB&url=https%3A%2F%2Farxiv.org%2Fabs%2F0911.3474&usg=AOvVaw2Vb8S3kgGuxSr7QtcKzFS9), [Drezner and Wesolowsky (1978)](https://www.jstor.org/stable/3009474?seq=1))
 
-We can think of a norm as a function that maps a vector to the positive real-number line **[0, *+inf*]**. Thus, we can define a general "*p-norm*" as **_||x||<sub>p</sub>**_ given a vector *x* with *i* components:
+We can think of a norm as a function that maps a vector to the positive real-number line [0, *+inf*]. Given a vector *x* with *i* components, we can define a general *p-norm* as ***||x||<sub>p</sub>.*** 
 
 <img style="float: right;" src="https://render.githubusercontent.com/render/math?math=||x||_p = \left( \sum_i|x_i|^p \right)^{\frac{1}{p}}">
 
@@ -49,6 +49,6 @@ Thus, we can define the geometric median of this *i-space* when we set *p = 1.*
 
 ## Optimal APA Locations
 
-Below is a map of optimal meeting regions approximated by the algorithm. Since each year has a slightly different attendance base, they do not overlap. Since we only have historical attendance data available, it is important to consider the confouding incentives created by the meeting's geography. Attendees who are closer to the meeting location that year are more likely to attend the meeting, and we see this reflected in the geometric median of each year, denoted by the golden cross within each polygon.
+Below is a map of optimal meeting regions approximated by the algorithm. Since each year has a slightly different attendance base, they do not overlap. Since we only have historical attendance data available, it is important to consider the confouding incentives created by the meeting's geography. Attendees who are closer to the meeting location that year are more likely to attend the meeting, and we see this reflected in the geometric median of each year, denoted by the cross within each polygon.
 
 ![APA Facility Location](/images/Facility-Location.jpg)
