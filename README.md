@@ -29,3 +29,18 @@ Here are some teaser visualizations of our flight-network model for APA Annual M
 ### This is a Counterfactural Scenario
 
 ![PHL 2020 APA Annaul Meeting](/images/PHL2020.jpg)
+
+<br />
+<br />
+
+## Optimal Meeting Location
+
+As part of our research, I have designed an algorithm to approximate the *geometric median*, or *centroid*, of the APA's historical attendance base each year. Traditionally, this problem has been the subject of branches within computational geometry and operations research often under the labels *facility location* or the *Weber problem.*
+
+While a theoretical closed from solution for the Geometric median exists in special cases, it has been more practical to arrive at trivially-approximate solutions using iterative approaches. Moreover, our context is somewhat more complex than traditonal facility location since we must work in a non-Euclidean space to account for the curvature of the Earth.
+
+In the non-Euclidean context, the geometric median is defined by the *L^1* norm and has more recently been generalized to Reimannian manifolds as the *Riemannian median*, both of which lack a closed form solution.
+
+We can think of a norm as a function that maps a vector to the positive real-number line, [0, *inf*]. Thus, we can define a general "*p-norm*" as ||x||_p given a vector *x* with *i* components:
+
+<img src="https://render.githubusercontent.com/render/math?math=||x||_p = \left( \sum_i|x_i|^p \right)^{1/p}">
