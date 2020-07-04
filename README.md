@@ -8,7 +8,7 @@ In the wake of the Coronavirus pandemic the APA canceled the 2020 annual meeting
 
 This research is currently in progress and supported by a team of psychiatrists at the think tank [Group for the Advancement of Psychiatry (GAP)](https://ourgap.org) and myself.
 
-Below are some teaser visualizations of our flight-network model for APA Annual Meeting attendees. Each point on the map represents a single attendee origin. The curved lines represent the geodesic distance or the path *as the crow flies* that each attendee will take to arrive at the given meeting location. The width and intensity of the lines correspond to the frequency of people traveling that pathway.
+Below are some teaser visualizations of our flight-network model for APA Annual Meeting attendees. Each point represents a single attendee's origin. The curved lines represent the geodesic distance or the path *as the crow flies* that each attendee will take to arrive at the given meeting location. This is the shortest arc between two points on the great circle, or Earth's surface.. The width and intensity of the lines correspond to the frequency of people traveling that pathway.
 
 ## Javitz Center 2018 APA Annual Meeting
 
