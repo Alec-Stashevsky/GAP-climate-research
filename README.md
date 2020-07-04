@@ -37,7 +37,7 @@ Below are some teaser visualizations of our flight-network model for APA Annual 
 
 In-person conferences are valuable opportunities for like-minded professionals to network and share their research. Yet, the avoided carbon footprint virtualizing such large meetings provides may not always outweigh the value of an in-person experience.
 
-Our research leads us naturally to question the extent to which we can mitigate the carbon footprint of such large meetings if and when they are held in-person. The [International Civil Aviation Organization (ICAO)](https://www.icao.int/), an agency of the United Nations, has even developed a *Green Meetings Calculator* to promote awareness among conference organizers of CO<sub>2</sub> and other GHG emission costs.
+Our research leads us naturally to question the extent to which we can mitigate the carbon footprint of such large meetings if and when they are held in-person. The [International Civil Aviation Organization (ICAO)](https://www.icao.int/), an agency of the United Nations, has even developed a *Green Meetings Calculator* to promote awareness among conference organizers of CO<sub>2</sub> emission costs from air travel.
 
 Essentially, we can leverage the historical attendance data from conferences to help locate regions that reduce the carbon footprint from attendees' commute. We use the data visualized above to reduce the total distance attendees will travel, since travel (especially air) is by far the largest source of such meetings' carbon footprint.
 
