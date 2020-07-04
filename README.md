@@ -39,7 +39,7 @@ As part of our research, I have designed an algorithm to approximate the *geomet
 
 While theoretical closed from solutions for the geometric median exist in special cases, it has been more practical to arrive at trivially-approximate solutions using iterative approaches. Moreover, our context is somewhat more complex than traditonal facility location since we must work in a non-Euclidean space to account for the ellipsoidal curvature of the Earth.
 
-In the non-Euclidean context, the geometric median is defined by the *L<sup>1</sup>* norm and has more recently been generalized to Reimannian manifolds as the *Riemannian median*, both of which lack a closed form solution (see [Yang (2009)](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwirhdPqtrPqAhWSOn0KHRCCCvkQFjABegQIARAB&url=https%3A%2F%2Farxiv.org%2Fabs%2F0911.3474&usg=AOvVaw2Vb8S3kgGuxSr7QtcKzFS9) and [Drezner and Wesolowsky (1978)](https://www.jstor.org/stable/3009474?seq=1))
+In the non-Euclidean context, the geometric median is defined by the *L<sup>1</sup>* norm and has more recently been generalized to Reimannian manifolds as the *Riemannian median*, both of which lack a closed form solution (see [Yang (2009)](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwirhdPqtrPqAhWSOn0KHRCCCvkQFjABegQIARAB&url=https%3A%2F%2Farxiv.org%2Fabs%2F0911.3474&usg=AOvVaw2Vb8S3kgGuxSr7QtcKzFS9), [Drezner and Wesolowsky (1978)](https://www.jstor.org/stable/3009474?seq=1))
 
 We can think of a norm as a function that maps a vector to the positive real-number line **[0, *+inf*]**. Thus, we can define a general "*p-norm*" as **_||x||<sub>p</sub>**_ given a vector *x* with *i* components:
 
