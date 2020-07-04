@@ -43,4 +43,4 @@ In the non-Euclidean context, the geometric median is defined by the *L^1* norm 
 
 We can think of a norm as a function that maps a vector to the positive real-number line, [0, *inf*]. Thus, we can define a general "*p-norm*" as ||x||_p given a vector *x* with *i* components:
 
-<img src="https://render.githubusercontent.com/render/math?math=||x||_p = \left( \sum_i|x_i|^p \right)^{frac{1}{p}}">
+<img src="https://render.githubusercontent.com/render/math?math=||x||_p = \left( \sum_i|x_i|^p \right)^{\frac{1}{p}}">
