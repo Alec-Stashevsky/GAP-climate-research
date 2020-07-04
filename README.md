@@ -39,7 +39,7 @@ In-person conferences are valuable opportunities for like-minded professionals t
 
 Our research leads us naturally to question the extent to which we can mitigate the carbon footprint of such large meetings if and when they are held in-person. The [International Civil Aviation Organization (ICAO)](https://www.icao.int/), an agency of the United Nations, has even developed a *Green Meetings Calculator* to promote awareness among conference organizers of CO<sub>2</sub> and other GHG emission costs.
 
-Essentially, we can leverage the historical attendance data from conferences to help us gain insight into locations that minimize the environmental impact from attendee travel. We use the data visualized above to reduce the total distance attendees will have to travel, since travel (especially air travel) is by far the largest source of large international meetings' carbon footprint.
+Essentially, we can leverage the historical attendance data from conferences to help us gain insight into locations that minimize the environmental impact from attendee travel. We use the data visualized above to reduce the total distance attendees will travel, since travel (especially air travel) is by far the largest source of large international meetings' carbon footprint.
 
 I have designed an algorithm to approximate the *geometric median*, or *centroid*, of the APA's attendance base of the past 3 years. The geometric median is the coordinate which minimizes the sum of distances to the conference center. Traditionally, this problem has been the subject of branches within computational geometry and operations research often under the labels *facility location* or the *Weber problem.*
 
@@ -47,7 +47,7 @@ While theoretical closed from solutions for the geometric median exist in specia
 
 In the Euclidean context, the geometric median is defined by the *L<sup>1</sup>* norm, but has more recently been generalized to Riemannian manifolds as the *Riemannian median*, both of which lack a closed form solution (see [Yang (2009)](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwirhdPqtrPqAhWSOn0KHRCCCvkQFjABegQIARAB&url=https%3A%2F%2Farxiv.org%2Fabs%2F0911.3474&usg=AOvVaw2Vb8S3kgGuxSr7QtcKzFS9), [Drezner and Wesolowsky (1978)](https://www.jstor.org/stable/3009474?seq=1))
 
-We can think of a norm as a function that maps a vector to the positive real-number line [0, *+inf*]. Given a vector *x* with *i* components, we can define a general *p-norm* as ***||x||<sub>p</sub>.*** 
+We can think of a norm as a function that maps a vector to the positive real-number line [0, *+inf*]. Given a vector *x* with *i* components, we can define a general *p-norm* as ***||x||<sub>p</sub>:*** 
 
 <img style="float: right;" src="https://render.githubusercontent.com/render/math?math=||x||_p = \left( \sum_i|x_i|^p \right)^{\frac{1}{p}}">
 
@@ -55,6 +55,6 @@ Thus, we can define the geometric median of this *i-space* when we set *p = 1.*
 
 ## Optimal APA Locations
 
-Below is a map of optimal meeting regions approximated by the algorithm. Since each year has a slightly different attendance base, they do not overlap completely. Because we only have historical attendance data available, it is important to consider the confounding incentives created by the meeting's geography. Attendees who are closer to the meeting location that year are more likely to attend the meeting, and we see this reflected in the geometric median of each year, denoted by the cross within each polygon.
+Below is a map of optimal meeting regions approximated by the algorithm. Since each year has a slightly different attendance base, they do not overlap completely. We only have historical attendance data available so it is important to consider the confounding incentives created by the meeting's geography. Attendees who are closer to the meeting location are more likely to attend the meeting. We see this reflected in the geometric median, denoted by the cross within each polygon, as it gets pulled toward the meeting's location that year.
 
 ![APA Facility Location](/images/Facility-Location.jpg)
