@@ -1,5 +1,5 @@
 ---
-title: "04 - Facility Location Algorithm"
+title: "04.1 - Precise Facility Location Algorithm"
 author: "Alec Stashevsky"
 date: "July 3, 2020"
 output: pdf_document
@@ -35,12 +35,12 @@ Latitudes range from [-90, 90] and longitudes ranges from [-180, 180]. Here we c
 
 ### NYC 2018
 ```{r Facility Location Algorithm NYC}
-# Sample 30000 coordinates for initial whole-earth grid
+# Sample 100000 coordinates for initial whole-earth grid
 ## This number can be increased to augment accuracy
 set.seed(32)
 coordinate.sample.nyc <- as.data.table(cbind(
-  lon = round(runif(30000, -180, 180), 8),
-  lat = round(runif(30000, -90, 90), 8)))
+  lon = round(runif(100000, -180, 180), 8),
+  lat = round(runif(100000, -90, 90), 8)))
 
 # Calculate geodesic distance for each coordinate
 ## Again, we are using the WGS84 ellipsoidal distance
@@ -72,8 +72,8 @@ grid.nyc <- as.matrix(rbind(
 ## This number can be increased to augment accuracy
 set.seed(656)
 coordinate.sample.sf <- as.data.table(cbind(
-  lon = round(runif(30000, -180, 180),8),
-  lat = round(runif(30000, -90, 90), 8)))
+  lon = round(runif(100000, -180, 180),8),
+  lat = round(runif(100000, -90, 90), 8)))
 
 # Calculate geodesic distance for each coordinate
 ## Again, we are using the WGS84 ellipsoidal distance
@@ -104,8 +104,8 @@ grid.sf <- as.matrix(rbind(
 ## This number can be increased to augment accuracy
 set.seed(321)
 coordinate.sample.phl <- as.data.table(cbind(
-  lon = round(runif(30000, -180, 180), 8),
-  lat = round(runif(30000, -90, 90), 8)))
+  lon = round(runif(100000, -180, 180), 8),
+  lat = round(runif(100000, -90, 90), 8)))
 
 # Calculate geodesic distance for each coordinate
 ## Again, we are using the WGS84 ellipsoidal distance
@@ -137,176 +137,33 @@ grid.phl <- as.matrix(rbind(
 
 These plots display a region of relative confidence which minimizes the distance APA Annual Meeting attendees will travel. Provided the attendee makeup is similar to that of of each We can locate the convention center with necessary floor space and capacity closest to centroid of our region of confidence. The coordinates for this point are (lon = -77.35697915, lat = 42.02497199).
 
-### NYC 2018
-
-```{r Facility Location Plot NYC}
+```{r Facility Location Plot}
 # Initialize write to pdf
-pdf(file = "APA Facility Location Simulation.pdf")
+pdf(file = "APA Precise Facility Location Simulation.pdf")
 
 # Plot 15 best sample coordinates to create region of confidence
 map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1,
     xlim = c(grid.nyc[1,1] - 3, grid.nyc[2,1] + 4),
     ylim = c(grid.nyc[1,2] - 3, grid.nyc[2,2] + 4))
 
-points(x = coordinate.rank.nyc$lon[1:10],
-       y = coordinate.rank.nyc$lat[1:10],
-       col = "orange red",
-       pch = 10, cex = 2.8)
-
 text(x = coordinate.rank.nyc$lon[1:10],
      y = coordinate.rank.nyc$lat[1:10],
      labels = coordinate.rank.nyc$rank[1:10],
-     col = "white", cex = 0.8)
-
-# Isolate maximum bounding polygon with best 15 approximations
-target <- c(10, 4, 6, 9, 5, 7, 8)
-poly.ordering.nyc <- as.matrix(rbind(
-  coordinate.rank.nyc[target[1]],
-  coordinate.rank.nyc[target[2]],  
-  coordinate.rank.nyc[target[3]],
-  coordinate.rank.nyc[target[4]],   
-  coordinate.rank.nyc[target[5]],
-  coordinate.rank.nyc[target[6]],
-  coordinate.rank.nyc[target[7]]))
-
-# Identify the centroid/geometric median/center of mass
-## This is actually calculated by using Euclidean distance of Mercator projection
-region.nyc <- makePoly(poly.ordering.nyc[,1:2], sp = TRUE)
-center.nyc <- centroid(region.nyc)
-
-polygon(poly.ordering.nyc, col = 
-          rgb(red = 1, green = 140/255, blue = 0, alpha = 0.25),
-        border = "orange")
-# Add center point
-points(x = center.nyc[1], y= center.nyc[2], col = "gold", pch = 3)
-
-# Add plot aesthetics
-title(main = "APA Facility Location Simulation - NYC 2018",
-      col.main = "white")
-```
-
-### SF 2019
-```{r Facility Location Plot SF}
-# Plot 15 best sample coordinates to create region of confidence
-map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1,
-    xlim = c(grid.sf[1,1] - 3, grid.sf[2,1] + 4),
-    ylim = c(grid.sf[1,2] - 3, grid.sf[2,2] + 4))
-
-points(x = coordinate.rank.sf$lon[1:10],
-       y = coordinate.rank.sf$lat[1:10],
-       col = "cyan",
-       pch = 10, cex = 2.8)
+     col = "orange red", cex = 0.8)
 
 text(x = coordinate.rank.sf$lon[1:10],
      y = coordinate.rank.sf$lat[1:10],
      labels = coordinate.rank.sf$rank[1:10],
-     col = "white", cex = 0.8)
-
-# Isolate maximum bounding polygon with best 15 approximations
-target <- c(10, 7, 8, 6, 9, 4, 5)
-poly.ordering.sf <- as.matrix(rbind(
-  coordinate.rank.sf[target[1]],
-  coordinate.rank.sf[target[2]],
-  coordinate.rank.sf[target[3]],
-  coordinate.rank.sf[target[4]],
-  coordinate.rank.sf[target[5]],
-  coordinate.rank.sf[target[6]],
-  coordinate.rank.sf[target[7]]))
-
-# Identify the centroid/geometric median/center of mass
-## This is actually calculated by using Euclidean distance of Mercator projection
-region.sf <- makePoly(poly.ordering.sf[,1:2], sp = TRUE)
-center.sf <- centroid(region.sf)
-
-
-polygon(poly.ordering.sf, col = 
-          rgb(red = 0, green = 1, blue = 1, alpha = 0.25),
-        border = "cyan")
-# Add center point
-points(x = center.sf[1], y= center.sf[2], col = "gold", pch = 3)
-
-# Add plot aesthetics
-title(main = "APA Facility Location Simulation - SF 2019",
-      col.main = "white")
-```
-
-### PHL 2020
-```{r Facility Location Plot PHL}
-# Plot 15 best sample coordinates to create region of confidence
-map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1,
-    xlim = c(grid.phl[1,1] - 3, grid.phl[2,1] + 4),
-    ylim = c(grid.phl[1,2] - 3, grid.phl[2,2] + 4))
-
-points(x = coordinate.rank.phl$lon[1:10],
-       y = coordinate.rank.phl$lat[1:10],
-       col = "purple",
-       pch = 10, cex = 2.8)
+     col = "cyan", cex = 0.8)
 
 text(x = coordinate.rank.phl$lon[1:10],
      y = coordinate.rank.phl$lat[1:10],
      labels = coordinate.rank.phl$rank[1:10],
-     col = "white", cex = 0.8)
-
-# Isolate maximum bounding polygon with best 15 approximations
-target <- c(10, 9, 5, 3, 7, 6, 8)
-poly.ordering.phl <- as.matrix(rbind(
-  coordinate.rank.phl[target[1]],
-  coordinate.rank.phl[target[2]],
-  coordinate.rank.phl[target[3]],
-  coordinate.rank.phl[target[4]],
-  coordinate.rank.phl[target[5]],
-  coordinate.rank.phl[target[6]],
-  coordinate.rank.phl[target[7]]))
-
-# Identify the centroid / geometric median/center of mass
-## This is actually calculated by using Euclidean distance of Mercator projection
-region.phl <- makePoly(poly.ordering.phl[,1:2], sp = TRUE)
-center.phl <- centroid(region.phl)
-
-polygon(poly.ordering.phl, col = 
-          rgb(red = 1, green = 107/255, blue = 180/255, alpha = 0.25),
-        border = "purple")
-# Add center point
-points(x = center.phl[1], y= center.phl[2], col = "gold", pch = 3)
-
-# Add plot aesthetics
-title(main = "APA Facility Location Simulation - PHL 2020 (Pre-cancellation)",
-      col.main = "white")
-```
-
-
-```{r Combine Plots}
-
-map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1,
-    xlim = c(grid.nyc[1,1] - 10, grid.nyc[2,1] + 6),
-    ylim = c(grid.nyc[1,2] - 15, grid.nyc[2,2] + 10))
-
-polygon(poly.ordering.nyc, col = 
-          rgb(red = 1, green = 140/255, blue = 0, alpha = 0.25),
-        border = "orange")
-# Add center point
-points(x = center.nyc[1], y= center.nyc[2], col = "orange", pch = 3)
-
-polygon(poly.ordering.sf, col = 
-          rgb(red = 0, green = 1, blue = 1, alpha = 0.25),
-        border = "cyan")
-# Add center point
-points(x = center.sf[1], y= center.sf[2], col = "cyan", pch = 3)
-
-polygon(poly.ordering.phl, col = 
-          rgb(red = 1, green = 107/255, blue = 180/255, alpha = 0.25),
-        border = "purple")
-# Add center point
-points(x = center.phl[1], y= center.phl[2], col = "purple", pch = 3)
+     col = "purple", cex = 0.8)
 
 # Add plot aesthetics
 title(main = "APA Facility Location Simulation",
       col.main = "white")
-
-legend("bottom", legend=c("NYC 2018", "SF 2019", "PHL 2020 (Pre-cancellation)"),
-       col=c("orange red", "cyan", "purple"), lty = 1, lwd = 1.2,  cex=0.75,
-       bg = "black",
-       text.col = "white")
 
 dev.off()
 ```
