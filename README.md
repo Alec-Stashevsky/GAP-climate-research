@@ -39,7 +39,7 @@ In-person conferences are valuable opportunities for like-minded professionals t
 
 Our research leads us naturally to question the extent to which we can mitigate the carbon footprint of such large meetings if and when they are held in-person. The [International Civil Aviation Organization (ICAO)](https://www.icao.int/), an agency of the United Nations, has even developed a *Green Meetings Calculator* to promote awareness among conference organizers of CO<sub>2</sub> and other GHG emission costs.
 
-Essentially, we can leverage the historical attendance data from conferences to help us gain insight into locations that minimize the environmental impact from attendee travel. We use the data visualized above to reduce the total distance attendees will travel, since travel (especially air travel) is by far the largest source of such meetings' carbon footprint.
+Essentially, we can leverage the historical attendance data from conferences to help locate regions that reduce the carbon footprint from attendees' commute. We use the data visualized above to reduce the total distance attendees will travel, since travel (especially air) is by far the largest source of such meetings' carbon footprint.
 
 I have designed an algorithm to approximate the *geometric median*, or *centroid*, of the APA's attendance base over the past 3 years. The geometric median is the coordinate which minimizes the sum of distances to the conference center. Traditionally, this problem has been the subject of branches within computational geometry and operations research often under the labels *facility location* or the *Weber problem.*
 
@@ -55,6 +55,8 @@ Thus, we can define the geometric median of this *i-space* when we set *p = 1.*
 
 ## Optimal APA Locations
 
-Below is a map of optimal meeting regions approximated by the algorithm. Since each year has a slightly different attendance base, they do not overlap completely. We only have historical attendance data available so it is important to consider the confounding incentives created by the meeting's geography. Attendees who are closer to the meeting location are more likely to attend the meeting. We see this reflected in the geometric median, denoted by the cross within each polygon, as it gets pulled toward the meeting's location that year.
+Below is a map of optimal meeting regions approximated by the algorithm. Since each year has a slightly different attendance base, they do not overlap completely. We only have historical attendance data available so it is important to consider the confounding incentives created by the meeting's geography. Attendees who are closer to the meeting's location are more likely to attend the meeting that year. 
+
+We see this reflected in the geometric median, denoted by the cross within each polygon, as it gets pulled toward the meeting's location that year:
 
 ![APA Facility Location](/images/Facility-Location.jpg)
