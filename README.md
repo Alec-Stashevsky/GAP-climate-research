@@ -41,7 +41,14 @@ While a theoretical closed from solution for the geometric median exists in spec
 
 In the non-Euclidean context, the geometric median is defined by the *L<sup>1</sup>* norm and has more recently been generalized to Reimannian manifolds as the *Riemannian median*, both of which lack a closed form solution.
 
-We can think of a norm as a function that maps a vector to the positive real-number line **[0, *+inf*]**. Thus, we can define a general "*p-norm*" as ***||x||<sub>p</sub>*** given a vector *x* with *i* components:
+We can think of a norm as a function that maps a vector to the positive real-number line **[0, *+inf*]**. Thus, we can define a general "*p-norm*" as **_||x||<sub>p</sub>**_ given a vector *x* with *i* components:
 
 <img style="float: right;" src="https://render.githubusercontent.com/render/math?math=||x||_p = \left( \sum_i|x_i|^p \right)^{\frac{1}{p}}">
 
+Thus, we can define the geometric median of this *i-space* when we set *p = 1.*
+
+## Optimal APA Locations
+
+Below is a map of optimal meeting regions approximated by the algorithm. Since each year has a slightly different attendance base, they do not overlap. Since we only have historical attendance data available, it is important to consider the confouding incentives created by the meeting's geography. Attendees who are closer to the meeting location that year are more likely to attend the meeting, and we see this reflected in the geometric median of each year, denoted by the golden cross within each polygon.
+
+![APA Facility Location](/images/Facility-Location.jpg)
