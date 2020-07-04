@@ -94,13 +94,13 @@ summary(intl.nyc$Frequency * intl.nyc$Meters.V1)
 summary(intl.sf$Frequency * intl.sf$Meters.V1)
 summary(intl.phl$Frequency * intl.phl$Meters.V1)
 
-# Total distance traveled in kilometers
+# Total one-way distance traveled in kilometers
 total.dom.nyc <- sum(dom.nyc$Frequency * dom.nyc$Meters.V1, na.rm = TRUE)/1000
 total.dom.sf <- sum(dom.sf$Frequency * dom.sf$Meters.V1, na.rm = TRUE)/1000
 total.dom.phl <- sum(dom.phl$Frequency * dom.phl$Meters.V1, na.rm = TRUE)/1000
 total.domestic <- rbind(total.dom.nyc, total.dom.sf, total.dom.phl)
 
-# Total distance traveled in kilometers
+# Total one-way distance traveled in kilometers
 total.intl.nyc <- sum(intl.nyc$Frequency *
                         intl.nyc$Meters.V1, na.rm = TRUE)/1000
 total.intl.sf <- sum(intl.sf$Frequency *

@@ -13,7 +13,6 @@ library(openxlsx)
 library(tidyverse)
 library(data.table)
 library(geosphere)
-library(doBy)
 library(maps)
 library(sp)
 rm(list = ls()) # Clean R Environment
@@ -26,7 +25,7 @@ path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Res
 nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
 phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
-conventions <- read_xlsx(path.convention, sheet = "Convention Centers") %>%
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
   setDT()
 ```
 
@@ -47,9 +46,11 @@ coordinate.sample.nyc <- as.data.table(cbind(
 ## Again, we are using the WGS84 ellipsoidal distance
 nyc.dist.log <- rep(NA, nrow(coordinate.sample.nyc))
 for (i in 1:nrow(coordinate.sample.nyc)){
-  nyc.dist.log[i] <- sum(distGeo(nyc[, c('lon', 'lat')],
-                                 c(coordinate.sample.nyc$lon[i],
-                                   coordinate.sample.nyc$lat[i])), na.rm = TRUE)
+  nyc.dist.log[i] <- sum(nyc$Frequency * # Weight by frequency
+                           distGeo(nyc[, c('lon', 'lat')],
+                                   c(coordinate.sample.nyc$lon[i],
+                                     coordinate.sample.nyc$lat[i])),
+                         na.rm = TRUE)
 }
 
 coordinate.rank.nyc <- arrange(cbind(coordinate.sample.nyc, nyc.dist.log),
@@ -78,9 +79,10 @@ coordinate.sample.sf <- as.data.table(cbind(
 ## Again, we are using the WGS84 ellipsoidal distance
 sf.dist.log <- rep(NA, nrow(coordinate.sample.sf))
 for (i in 1:nrow(coordinate.sample.sf)){
-  sf.dist.log[i] <- sum(distGeo(sf[, c('lon', 'lat')],
-                                 c(coordinate.sample.sf$lon[i],
-                                   coordinate.sample.sf$lat[i])), na.rm = TRUE)
+  sf.dist.log[i] <- sum(sf$Frequency * # Weight by frequency
+                          distGeo(sf[, c('lon', 'lat')],
+                                  c(coordinate.sample.sf$lon[i],
+                                    coordinate.sample.sf$lat[i])), na.rm = TRUE)
 }
 
 coordinate.rank.sf <- arrange(cbind(coordinate.sample.sf, sf.dist.log),
@@ -109,9 +111,11 @@ coordinate.sample.phl <- as.data.table(cbind(
 ## Again, we are using the WGS84 ellipsoidal distance
 phl.dist.log <- rep(NA, nrow(coordinate.sample.phl))
 for (i in 1:nrow(coordinate.sample.phl)){
-  phl.dist.log[i] <- sum(distGeo(phl[, c('lon', 'lat')],
-                                 c(coordinate.sample.phl$lon[i],
-                                   coordinate.sample.phl$lat[i])), na.rm = TRUE)
+  phl.dist.log[i] <- sum(phl$Frequency * # Weight by frequency
+                           distGeo(phl[, c('lon', 'lat')],
+                                   c(coordinate.sample.phl$lon[i],
+                                     coordinate.sample.phl$lat[i])),
+                         na.rm = TRUE)
 }
 
 coordinate.rank.phl <- arrange(cbind(coordinate.sample.phl, phl.dist.log),
@@ -130,6 +134,8 @@ grid.phl <- as.matrix(rbind(
 
 
 ## Facility Location Plot
+
+These plots display a region of relative confidence which minimizes the distance APA Annual Meeting attendees will travel. Provided the attendee makeup is similar to that of of each We can locate the convention center with necessary floor space and capacity closest to centroid of our region of confidence. The coordinates for this point are (lon = -77.35697915, lat = 42.02497199).
 
 ### NYC 2018
 
@@ -173,8 +179,8 @@ polygon(poly.ordering, col =
 points(x = center.nyc[1], y= center.nyc[2], col = "gold", pch = 3)
 
 # Add plot aesthetics
-title(main = "APA Facility Location Simulation",
-      sub = "NYC 2018", col.main = "white", col.sub = "white")
+title(main = "APA Facility Location Simulation - NYC 2018",
+      col.main = "white")
 ```
 
 ### SF 2019
@@ -195,7 +201,7 @@ text(x = coordinate.rank.sf$lon[1:10],
      col = "white", cex = 0.8)
 
 # Isolate maximum bounding polygon with best 15 approximations
-target <- c(10, 9, 6, 2, 7, 8)
+target <- c(10, 7, 8, 5, 9, 6)
 poly.ordering <- as.matrix(rbind(
   coordinate.rank.sf[target[1]],
   coordinate.rank.sf[target[2]],
@@ -215,8 +221,8 @@ polygon(poly.ordering, col =
 points(x = center.sf[1], y= center.sf[2], col = "gold", pch = 3)
 
 # Add plot aesthetics
-title(main = "APA Facility Location Simulation",
-      sub = "SF 2019", col.main = "white", col.sub = "white")
+title(main = "APA Facility Location Simulation - SF 2019",
+      col.main = "white")
 ```
 
 ### PHL 2020
@@ -237,14 +243,15 @@ text(x = coordinate.rank.phl$lon[1:10],
      col = "white", cex = 0.8)
 
 # Isolate maximum bounding polygon with best 15 approximations
-target <- c(10, 9, 6, 2, 7, 8)
+target <- c(10, 9, 6, 5, 8, 7, 4)
 poly.ordering <- as.matrix(rbind(
   coordinate.rank.phl[target[1]],
   coordinate.rank.phl[target[2]],
   coordinate.rank.phl[target[3]],
   coordinate.rank.phl[target[4]],
   coordinate.rank.phl[target[5]],
-  coordinate.rank.phl[target[6]]))
+  coordinate.rank.phl[target[6]],
+  coordinate.rank.phl[target[7]]))
 
 # Identify the centriod/geometric median/center of mass
 ## This is actually calculated by using Euclidian distance of Mercator projection
@@ -257,10 +264,8 @@ polygon(poly.ordering, col =
 points(x = center.phl[1], y= center.phl[2], col = "gold", pch = 3)
 
 # Add plot aesthetics
-title(main = "APA Facility Location Simulation",
-      sub = "PHL 2020 (Pre-cancellation)", col.main = "white", col.sub = "white")
+title(main = "APA Facility Location Simulation - PHL 2020 (Pre-cancellation)",
+      col.main = "white")
 
 dev.off()
 ```
-
-This has provided us with a region of relative confidence to locate the most geographically efficient annual meeting location for APA, provided the attendee makeup is similar to that of NYC 2018. We can locate the convention center with necessary floor space and capacity closest to centroid of our region of confidence. The coordinates for this point are (lon = -77.35697915, lat = 42.02497199).
