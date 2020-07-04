@@ -1,7 +1,7 @@
 ---
 title: "03 - APA Geodistance Calculator"
 author: "Alec Stashevsky"
-date: "June 27, 2020"
+date: "July 4, 2020"
 output: pdf_document
 ---
 
@@ -46,6 +46,11 @@ phl.gdist <- as.data.table(distGeo(phl[, c('lon', 'lat')], phl.dest))
 final.nyc <- cbind(nyc, Meters = nyc.gdist)
 final.sf <- cbind(sf, Meters = sf.gdist)
 final.phl <- cbind(phl, Meters = phl.gdist)
+
+# Create indicator variable for driving if less than 400 km away from meeting
+final.nyc[, drive := ifelse(Meters.V1 <= 400000, 1, 0)]
+final.sf[, drive := ifelse(Meters.V1 <= 400000, 1, 0)]
+final.phl[, drive := ifelse(Meters.V1 <= 400000, 1, 0)]
 ```
 
 
@@ -68,6 +73,54 @@ total.sf <- sum(final.sf$Frequency * final.sf$Meters.V1, na.rm = TRUE)/1000
 total.phl <- sum(final.phl$Frequency * final.phl$Meters.V1, na.rm = TRUE)/1000
 total.distance <- rbind(total.nyc, total.sf, total.phl)
 ```
+
+```{r Drive/Fly}
+# Filter for drivers
+drive.nyc <- final.nyc[drive == 1]
+drive.sf <- final.sf[drive == 1]
+drive.phl <- final.phl[drive == 1]
+
+# Filter to flyers
+fly.nyc <- final.nyc[drive != 1]
+fly.sf <- final.sf[drive != 1]
+fly.phl <- final.phl[drive != 1]
+
+# Calculated percentage of drivers
+nyc.drive.prop <- sum(drive.nyc$Frequency) / sum(final.nyc$Frequency)
+sf.drive.prop <- sum(drive.sf$Frequency) / sum(final.sf$Frequency)
+phl.drive.prop <- sum(drive.phl$Frequency) / sum(final.phl$Frequency)
+drive.prop <- rbind(nyc.drive.prop, sf.drive.prop, phl.drive.prop)
+
+# Summary Stats for total distances traveled
+summary(drive.nyc$Frequency * drive.nyc$Meters.V1)
+summary(drive.sf$Frequency * drive.sf$Meters.V1)
+summary(drive.phl$Frequency * drive.phl$Meters.V1)
+summary(fly.nyc$Frequency * fly.nyc$Meters.V1)
+summary(fly.sf$Frequency * fly.sf$Meters.V1)
+summary(fly.phl$Frequency * fly.phl$Meters.V1)
+
+# Total one-way distance traveled in kilometers
+## Drivers
+total.drive.nyc <- sum(drive.nyc$Frequency * drive.nyc$Meters.V1,
+                       na.rm = TRUE)/1000
+total.drive.sf <- sum(drive.sf$Frequency * drive.sf$Meters.V1,
+                      na.rm = TRUE)/1000
+total.drive.phl <- sum(drive.phl$Frequency * drive.phl$Meters.V1,
+                       na.rm = TRUE)/1000
+total.drive <- rbind(total.drive.nyc, total.drive.sf, total.drive.phl)
+
+## Flyers
+total.fly.nyc <- sum(fly.nyc$Frequency * fly.nyc$Meters.V1,
+                       na.rm = TRUE)/1000
+total.fly.sf <- sum(fly.sf$Frequency * fly.sf$Meters.V1,
+                      na.rm = TRUE)/1000
+total.fly.phl <- sum(fly.phl$Frequency * fly.phl$Meters.V1,
+                       na.rm = TRUE)/1000
+total.fly <- rbind(total.fly.nyc, total.fly.sf, total.fly.phl)
+
+```
+
+
 
 ```{r International / Domestic}
 # Filter for domestic attendees
@@ -114,12 +167,22 @@ table.names <- c("NYC 2018", "SF 2019", "PHL 2020")
 
 
 total.table <- as.data.frame(cbind(table.names,
+                                   total.drive,
+                                   total.fly,
+                                   drive.prop,
                                    total.domestic,
                                    total.international,
                                    total.distance,
                                    dom.prop))
 # Fix headers
-colnames(total.table) <- c("Meeting Location","Domestic (km)", "International (km)", "Total (km)", "% Domestic Attendance")
+colnames(total.table) <- c("Meeting Location",
+                           "Distance Driven (km)",
+                           "Distance Flown (km)",
+                           "Proportion of Drivers (%)",
+                           "Domestic Travel (km)",
+                           "International Travel (km)",
+                           "Total (km)",
+                           "Domestic Attendance (%)")
 ```
 
 
