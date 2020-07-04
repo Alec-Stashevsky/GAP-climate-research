@@ -30,65 +30,237 @@ conventions <- read_xlsx(path.convention, sheet = "Convention Centers") %>%
   setDT()
 ```
 
+## Facility Location Algorithm
 
 Latitudes range from [-90, 90] and longitudes ranges from [-180, 180]. Here we create an algorithm to identify the optimal conference location based on the APA Annual Meetings geographic makeup of attendees.
-```{r Facility Location Algorithm}
-# Sample 10000 coordinates for initial whole-earth grid
+
+### NYC 2018
+```{r Facility Location Algorithm NYC}
+# Sample 30000 coordinates for initial whole-earth grid
+## This number can be increased to augment accuracy
 set.seed(32)
-coordinate.sample <- as.data.table(cbind(lon = round(runif(100000, -180, 180), 8),
-                                         lat = round(runif(100000, -90, 90), 8)))
+coordinate.sample.nyc <- as.data.table(cbind(
+  lon = round(runif(30000, -180, 180), 8),
+  lat = round(runif(30000, -90, 90), 8)))
 
 # Calculate geodesic distance for each coordinate
 ## Again, we are using the WGS84 ellipsoidal distance
-nyc.dist.log <- rep(NA, nrow(coordinate.sample))
-for (i in 1:nrow(coordinate.sample)){
+nyc.dist.log <- rep(NA, nrow(coordinate.sample.nyc))
+for (i in 1:nrow(coordinate.sample.nyc)){
   nyc.dist.log[i] <- sum(distGeo(nyc[, c('lon', 'lat')],
-                                 c(coordinate.sample$lon[i],
-                                   coordinate.sample$lat[i])), na.rm = TRUE)
+                                 c(coordinate.sample.nyc$lon[i],
+                                   coordinate.sample.nyc$lat[i])), na.rm = TRUE)
 }
 
-coordinate.rank <- arrange(cbind(coordinate.sample, nyc.dist.log), nyc.dist.log)
-coordinate.rank <- cbind(coordinate.rank, rank = seq(1:nrow(coordinate.rank)))
+coordinate.rank.nyc <- arrange(cbind(coordinate.sample.nyc, nyc.dist.log),
+                               nyc.dist.log)
+coordinate.rank.nyc <- cbind(coordinate.rank.nyc,
+                             rank = seq(1:nrow(coordinate.rank.nyc)))
 
 # Create grid of confidence from 10 coordinates with the least geo-distance
-grid <- as.matrix(rbind(
-  c(min(coordinate.rank$lon[1:15]),
-    min(coordinate.rank$lat[1:15])),
-  c(max(coordinate.rank$lon[1:15]),
-    max(coordinate.rank$lat[1:15]))))
+grid.nyc <- as.matrix(rbind(
+  c(min(coordinate.rank.nyc$lon[1:10]),
+    min(coordinate.rank.nyc$lat[1:10])),
+  c(max(coordinate.rank.nyc$lon[1:10]),
+    max(coordinate.rank.nyc$lat[1:10]))))
+```
 
-# Find center point
+### SF 2019
+```{r Facility Location Algorithm SF}
+# Sample 30000 coordinates for initial whole-earth grid
+## This number can be increased to augment accuracy
+set.seed(656)
+coordinate.sample.sf <- as.data.table(cbind(
+  lon = round(runif(30000, -180, 180),8),
+  lat = round(runif(30000, -90, 90), 8)))
+
+# Calculate geodesic distance for each coordinate
+## Again, we are using the WGS84 ellipsoidal distance
+sf.dist.log <- rep(NA, nrow(coordinate.sample.sf))
+for (i in 1:nrow(coordinate.sample.sf)){
+  sf.dist.log[i] <- sum(distGeo(sf[, c('lon', 'lat')],
+                                 c(coordinate.sample.sf$lon[i],
+                                   coordinate.sample.sf$lat[i])), na.rm = TRUE)
+}
+
+coordinate.rank.sf <- arrange(cbind(coordinate.sample.sf, sf.dist.log),
+                              sf.dist.log)
+coordinate.rank.sf <- cbind(coordinate.rank.sf,
+                            rank = seq(1:nrow(coordinate.rank.sf)))
+
+# Create grid of confidence from 10 coordinates with the least geo-distance
+grid.sf <- as.matrix(rbind(
+  c(min(coordinate.rank.sf$lon[1:10]),
+    min(coordinate.rank.sf$lat[1:10])),
+  c(max(coordinate.rank.sf$lon[1:10]),
+    max(coordinate.rank.sf$lat[1:10]))))
+```
+
+### PHL 2020
+```{r Facility Location Algorithm PHL}
+# Sample 30000 coordinates for initial whole-earth grid
+## This number can be increased to augment accuracy
+set.seed(321)
+coordinate.sample.phl <- as.data.table(cbind(
+  lon = round(runif(30000, -180, 180), 8),
+  lat = round(runif(30000, -90, 90), 8)))
+
+# Calculate geodesic distance for each coordinate
+## Again, we are using the WGS84 ellipsoidal distance
+phl.dist.log <- rep(NA, nrow(coordinate.sample.phl))
+for (i in 1:nrow(coordinate.sample.phl)){
+  phl.dist.log[i] <- sum(distGeo(phl[, c('lon', 'lat')],
+                                 c(coordinate.sample.phl$lon[i],
+                                   coordinate.sample.phl$lat[i])), na.rm = TRUE)
+}
+
+coordinate.rank.phl <- arrange(cbind(coordinate.sample.phl, phl.dist.log),
+                               phl.dist.log)
+
+coordinate.rank.phl <- cbind(coordinate.rank.phl,
+                             rank = seq(1:nrow(coordinate.rank.phl)))
+
+# Create grid of confidence from 10 coordinates with the least geo-distance
+grid.phl <- as.matrix(rbind(
+  c(min(coordinate.rank.phl$lon[1:10]),
+    min(coordinate.rank.phl$lat[1:10])),
+  c(max(coordinate.rank.phl$lon[1:10]),
+    max(coordinate.rank.phl$lat[1:10]))))
+```
+
+
+## Facility Location Plot
+
+### NYC 2018
+
+```{r Facility Location Plot NYC}
+# Initialize write to pdf
+pdf(file = "APA Facility Location Simulation.pdf")
 
 # Plot 15 best sample coordinates to create region of confidence
 map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1,
-    xlim = c(grid[1,1] - 2 , grid[2,1] + 3),
-    ylim = c(grid[1,2] - 2, grid[2,2] + 3))
+    xlim = c(grid.nyc[1,1] - 3, grid.nyc[2,1] + 4),
+    ylim = c(grid.nyc[1,2] - 3, grid.nyc[2,2] + 4))
 
-points(x = coordinate.rank$lon[1:15],
-       y = coordinate.rank$lat[1:15],
+points(x = coordinate.rank.nyc$lon[1:10],
+       y = coordinate.rank.nyc$lat[1:10],
        col = rgb(red = 255/255, green = 49/255, blue = 50/255, alpha = 1),
        pch = 10, cex = 2.8)
 
-text(x = coordinate.rank$lon[1:15],
-     y = coordinate.rank$lat[1:15],
-     labels = coordinate.rank$rank[1:15],
+text(x = coordinate.rank.nyc$lon[1:10],
+     y = coordinate.rank.nyc$lat[1:10],
+     labels = coordinate.rank.nyc$rank[1:10],
      col = "white", cex = 0.8)
 
 # Isolate maximum bounding polygon with best 15 approximations
-target <- c(15, 11, 13, 10, 12, 9, 14)
+target <- c(10, 9, 6, 2, 7, 8)
 poly.ordering <- as.matrix(rbind(
-  coordinate.rank[target[1]],
-  coordinate.rank[target[2]],
-  coordinate.rank[target[3]],
-  coordinate.rank[target[4]],
-  coordinate.rank[target[5]],
-  coordinate.rank[target[6]],
-  coordinate.rank[target[7]]))
+  coordinate.rank.nyc[target[1]],
+  coordinate.rank.nyc[target[2]],
+  coordinate.rank.nyc[target[3]],
+  coordinate.rank.nyc[target[4]],
+  coordinate.rank.nyc[target[5]],
+  coordinate.rank.nyc[target[6]]))
 
-
+# Identify the centriod/geometric median/center of mass
+## This is actually calculated by using Euclidian distance of Mercator projection
+center.nyc <- centroid(poly.ordering[,1:2])
 region <- makePoly(poly.ordering[,1:2], sp = TRUE)
 
 polygon(poly.ordering, col = 
-          rgb(red = 0, green = 1, blue = 1, alpha = 0.16))
+          rgb(red = 0, green = 1, blue = 1, alpha = 0.25))
+# Add center point
+points(x = center.nyc[1], y= center.nyc[2], col = "gold", pch = 3)
+
+# Add plot aesthetics
+title(main = "APA Facility Location Simulation",
+      sub = "NYC 2018", col.main = "white", col.sub = "white")
 ```
 
+### SF 2019
+```{r Facility Location Plot SF}
+# Plot 15 best sample coordinates to create region of confidence
+map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+    xlim = c(grid.sf[1,1] - 3, grid.sf[2,1] + 4),
+    ylim = c(grid.sf[1,2] - 3, grid.sf[2,2] + 4))
+
+points(x = coordinate.rank.sf$lon[1:10],
+       y = coordinate.rank.sf$lat[1:10],
+       col = rgb(red = 255/255, green = 49/255, blue = 50/255, alpha = 1),
+       pch = 10, cex = 2.8)
+
+text(x = coordinate.rank.sf$lon[1:10],
+     y = coordinate.rank.sf$lat[1:10],
+     labels = coordinate.rank.sf$rank[1:10],
+     col = "white", cex = 0.8)
+
+# Isolate maximum bounding polygon with best 15 approximations
+target <- c(10, 9, 6, 2, 7, 8)
+poly.ordering <- as.matrix(rbind(
+  coordinate.rank.sf[target[1]],
+  coordinate.rank.sf[target[2]],
+  coordinate.rank.sf[target[3]],
+  coordinate.rank.sf[target[4]],
+  coordinate.rank.sf[target[5]],
+  coordinate.rank.sf[target[6]]))
+
+# Identify the centriod/geometric median/center of mass
+## This is actually calculated by using Euclidian distance of Mercator projection
+center.sf <- centroid(poly.ordering[,1:2])
+region <- makePoly(poly.ordering[,1:2], sp = TRUE)
+
+polygon(poly.ordering, col = 
+          rgb(red = 0, green = 1, blue = 1, alpha = 0.25))
+# Add center point
+points(x = center.sf[1], y= center.sf[2], col = "gold", pch = 3)
+
+# Add plot aesthetics
+title(main = "APA Facility Location Simulation",
+      sub = "SF 2019", col.main = "white", col.sub = "white")
+```
+
+### PHL 2020
+```{r Facility Location Plot PHL}
+# Plot 15 best sample coordinates to create region of confidence
+map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+    xlim = c(grid.phl[1,1] - 3, grid.phl[2,1] + 4),
+    ylim = c(grid.phl[1,2] - 3, grid.phl[2,2] + 4))
+
+points(x = coordinate.rank.phl$lon[1:10],
+       y = coordinate.rank.phl$lat[1:10],
+       col = rgb(red = 255/255, green = 49/255, blue = 50/255, alpha = 1),
+       pch = 10, cex = 2.8)
+
+text(x = coordinate.rank.phl$lon[1:10],
+     y = coordinate.rank.phl$lat[1:10],
+     labels = coordinate.rank.phl$rank[1:10],
+     col = "white", cex = 0.8)
+
+# Isolate maximum bounding polygon with best 15 approximations
+target <- c(10, 9, 6, 2, 7, 8)
+poly.ordering <- as.matrix(rbind(
+  coordinate.rank.phl[target[1]],
+  coordinate.rank.phl[target[2]],
+  coordinate.rank.phl[target[3]],
+  coordinate.rank.phl[target[4]],
+  coordinate.rank.phl[target[5]],
+  coordinate.rank.phl[target[6]]))
+
+# Identify the centriod/geometric median/center of mass
+## This is actually calculated by using Euclidian distance of Mercator projection
+center.phl <- centroid(poly.ordering[,1:2])
+region <- makePoly(poly.ordering[,1:2], sp = TRUE)
+
+polygon(poly.ordering, col = 
+          rgb(red = 0, green = 1, blue = 1, alpha = 0.25))
+# Add center point
+points(x = center.phl[1], y= center.phl[2], col = "gold", pch = 3)
+
+# Add plot aesthetics
+title(main = "APA Facility Location Simulation",
+      sub = "PHL 2020 (Pre-cancellation)", col.main = "white", col.sub = "white")
+
+dev.off()
+```
+
+This has provided us with a region of relative confidence to locate the most geographically efficient annual meeting location for APA, provided the attendee makeup is similar to that of NYC 2018. We can locate the convention center with necessary floor space and capacity closest to centroid of our region of confidence. The coordinates for this point are (lon = -77.35697915, lat = 42.02497199).
