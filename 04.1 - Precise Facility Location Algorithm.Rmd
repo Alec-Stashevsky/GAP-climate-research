@@ -143,27 +143,34 @@ pdf(file = "APA Precise Facility Location Simulation.pdf")
 
 # Plot 15 best sample coordinates to create region of confidence
 map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1,
-    xlim = c(grid.nyc[1,1] - 3, grid.nyc[2,1] + 4),
-    ylim = c(grid.nyc[1,2] - 3, grid.nyc[2,2] + 4))
+    xlim = c(grid.nyc[1,1] - 10, grid.nyc[2,1] + 6),
+    ylim = c(grid.nyc[1,2] - 15, grid.nyc[2,2] + 10))
 
-text(x = coordinate.rank.nyc$lon[1:10],
-     y = coordinate.rank.nyc$lat[1:10],
+text(x = jitter(coordinate.rank.nyc$lon[1:10]),
+     y = jitter(coordinate.rank.nyc$lat[1:10]),
      labels = coordinate.rank.nyc$rank[1:10],
-     col = "orange red", cex = 0.8)
+     col = "orange red", cex = 0.3)
 
-text(x = coordinate.rank.sf$lon[1:10],
-     y = coordinate.rank.sf$lat[1:10],
+text(x = jitter(coordinate.rank.sf$lon[1:10]),
+     y = jitter(coordinate.rank.sf$lat[1:10]),
      labels = coordinate.rank.sf$rank[1:10],
-     col = "cyan", cex = 0.8)
+     col = "cyan", cex = 0.3)
 
-text(x = coordinate.rank.phl$lon[1:10],
-     y = coordinate.rank.phl$lat[1:10],
+text(x = jitter(coordinate.rank.phl$lon[1:10]),
+     y = jitter(coordinate.rank.phl$lat[1:10]),
      labels = coordinate.rank.phl$rank[1:10],
-     col = "purple", cex = 0.8)
+     col = "purple", cex = 0.3)
 
 # Add plot aesthetics
 title(main = "APA Facility Location Simulation",
       col.main = "white")
 
+legend("bottom", legend=c("NYC 2018", "SF 2019", "PHL 2020 (Pre-cancellation)"),
+       col=c("orange red", "cyan", "purple"), lty = 1, lwd = 1.2,  cex=0.75,
+       bg = "black",
+       text.col = "white")
+
 dev.off()
 ```
+
+Here we see that the largest region is for the PHL 2020 counterfactual scenario. This is due to the smaller size of attendees' which were curtailed due to the virtualization of the annual meeting in the midst of Covid-19.
