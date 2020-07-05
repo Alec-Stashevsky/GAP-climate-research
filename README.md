@@ -41,7 +41,7 @@ Our research leads us naturally to question the extent to which we can mitigate 
 
 Essentially, we can leverage the historical attendance data from conferences to help locate regions that reduce the carbon footprint of the commute. We use the data visualized above to reduce the total distance attendees will travel, since travel (especially air) is by far the largest source of such meetings' carbon footprint.
 
-I have designed an algorithm to approximate the *geometric median*, or *centroid*, of the APA's attendance base over the past 3 years. The geometric median is the coordinate which minimizes the sum of distances to the conference center. Traditionally, this problem has been the subject of branches within computational geometry and operations research often under the labels *facility location* or the *Weber problem.*
+I have designed an algorithm to approximate the *geometric median*, or *centroid*, of the APA's attendance base over the past 3 years. The geometric median is the coordinate which minimizes the sum of distances attendees travel. Traditionally, this problem has been the subject of branches within computational geometry and operations research often under the labels *facility location* or the *Weber problem.*
 
 While theoretical closed from solutions for the geometric median exist in special cases, it has been more practical to arrive at trivially-approximate solutions using iterative approaches. Moreover, our context is somewhat more complex than traditional facility location since we must work in a non-Euclidean space to account for the ellipsoidal curvature of the Earth.
 
