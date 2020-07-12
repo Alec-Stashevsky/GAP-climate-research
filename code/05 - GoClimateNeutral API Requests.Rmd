@@ -1,0 +1,59 @@
+---
+title: "05 - GoClimateNeutral API Requests"
+author: "Alec Stashevsky"
+date: "7/11/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(httr)
+library(jsonlite)
+library(readxl)
+library(openxlsx)
+library(tidyverse)
+library(data.table)
+```
+
+## Import APA Geodistance Data
+```{r APA Import}
+path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
+
+nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
+  setDT()
+```
+
+## Import Global Airport Database 
+```{r Airports Import}
+path.airports <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GlobalAirportDatabase/GlobalAirportDatabase.txt"
+
+# Import that data
+airports.raw <- read.delim(path.airports, header = FALSE, sep = ":") %>% setDT()
+
+# Drop extraneous columns
+airports <- airports.raw[, c(1:5, 14:16)]
+
+# Set column names
+setnames(airports, names(airports), c("ICAO", "IATA", "Airport Name",
+         "City", "Country", "Altitude", "Latitude", "Longitude"))
+```
+
+
+
+
+
+
+
+
+## GoClimateNeutral Flight Emissions API Connection
+
+```{r API Connection}
+api.path <- "https://api.goclimate.com/v1/flight_footprint"
+r <- GET(api.path, )
+
+
+
+```
