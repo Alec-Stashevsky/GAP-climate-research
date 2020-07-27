@@ -22,14 +22,141 @@ rm(list = ls()) # Clean R Environment
 ```{r Import}
 path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Data/APA Meeting Locations Timeline.xlsx"
 
-meetings <- read_excel(path.in) %>% setDT()
+meetings <- read_excel(path.in, sheet = "Unique Locations") %>% setDT()
+
+# There are two chicago entries, w
 ```
+
+## Import Geodistance Data from 03
+```{r Import}
+path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
+
+nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
+  setDT()
+``` 
 
 ## Geocode
 ```{r Geocoding NYC}
 # Geocode with Google Geocoding API - this will take some time
 meetings.geo <- mutate_geocode(meetings, location = Location)
-
-
 ```
 
+## Rank Meeting Locations Over Attendance Bases
+
+### NYC 2018
+```{r Facility Location Algorithm NYC}
+# Calculate geodesic distance for each meeting location
+## Again, we are using the WGS84 ellipsoidal distance
+nyc.meet.log <- rep(NA, nrow(meetings.geo))
+for (i in 1:nrow(meetings.geo)){
+  nyc.meet.log[i] <- sum(nyc$Frequency * # Weight by frequency
+                           distGeo(nyc[, c('lon', 'lat')],
+                                   c(meetings.geo$lon[i],
+                                     meetings.geo$lat[i])),
+                         na.rm = TRUE)
+}
+
+meeting.rank.nyc <- arrange(cbind(meetings.geo, nyc.meet.log),
+                               nyc.meet.log)
+meeting.rank.nyc <- cbind(meeting.rank.nyc,
+                             rank = seq(1:nrow(meeting.rank.nyc)))
+```
+
+### SF 2019
+```{r Facility Location Algorithm SF}
+# Calculate geodesic distance for each meeting location
+## Again, we are using the WGS84 ellipsoidal distance
+sf.meet.log <- rep(NA, nrow(meetings.geo))
+for (i in 1:nrow(meetings.geo)){
+  sf.meet.log[i] <- sum(sf$Frequency * # Weight by frequency
+                           distGeo(sf[, c('lon', 'lat')],
+                                   c(meetings.geo$lon[i],
+                                     meetings.geo$lat[i])),
+                         na.rm = TRUE)
+}
+
+meeting.rank.sf <- arrange(cbind(meetings.geo, sf.meet.log),
+                               sf.meet.log)
+meeting.rank.sf <- cbind(meeting.rank.sf,
+                             rank = seq(1:nrow(meeting.rank.sf)))
+```
+
+### PHL 2020
+```{r Facility Location Algorithm PHL}
+# Calculate geodesic distance for each meeting location
+## Again, we are using the WGS84 ellipsoidal distance
+phl.meet.log <- rep(NA, nrow(meetings.geo))
+for (i in 1:nrow(meetings.geo)){
+  phl.meet.log[i] <- sum(phl$Frequency * # Weight by frequency
+                           distGeo(phl[, c('lon', 'lat')],
+                                   c(meetings.geo$lon[i],
+                                     meetings.geo$lat[i])),
+                         na.rm = TRUE)
+}
+
+meeting.rank.phl <- arrange(cbind(meetings.geo, phl.meet.log),
+                               phl.meet.log)
+meeting.rank.phl <- cbind(meeting.rank.phl,
+                             rank = seq(1:nrow(meeting.rank.phl)))
+```
+
+```{r Rank Export}
+# Merge meeting rankings
+meeting.rank <- meeting.rank.nyc[meeting.rank.sf, on = "Location"][
+  meeting.rank.phl, on = "Location"][, `:=`(NYC = rank,
+                                            SF = i.rank,
+                                            PHL = i.rank.1)][,
+                                                             `:=`(rank = NULL,
+                                                                i.rank = NULL,
+                                                                i.rank.1 = NULL)
+                                                           ][,-c(5,6,8,9)]
+
+write.xlsx(meeting.rank,
+           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Historical Meetings Rankings.xlsx")
+```
+
+
+## Plot Meeting Location Rank
+```{r Meeting Location Plot}
+# Initialize write to pdf
+pdf(file = "APA Historical Meeting Locations Rank.pdf")
+
+# Plot 15 best sample coordinates to create region of confidence
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+text(x = meeting.rank.nyc$lon,
+     y = meeting.rank.nyc$lat,
+     # pos = 1,
+     labels = meeting.rank.nyc$rank,
+     col = "orange red", cex = 0.5)
+
+text(x = jitter(meeting.rank.sf$lon),
+     y = jitter(meeting.rank.sf$lat),
+     pos = 1,
+     offset = 0.2,
+     labels = meeting.rank.sf$rank,
+     col = "cyan", cex = 0.5)
+
+text(x = jitter(meeting.rank.phl$lon),
+     y = jitter(meeting.rank.phl$lat),
+     pos = 3,
+     offset = 0.2,
+     labels = meeting.rank.phl$rank,
+     col = "purple", cex = 0.5)
+
+# Add plot aesthetics
+title(main = "APA Historical Meeting Travel Emissions Ranking",
+      col.main = "white")
+
+legend("bottom", legend=c("NYC 2018", "SF 2019", "PHL 2020 (Pre-cancellation)"),
+       col=c("orange red", "cyan", "purple"), lty = 1, lwd = 1.2,  cex=0.5,
+       bg = "black",
+       text.col = "white")
+
+dev.off()
+```
