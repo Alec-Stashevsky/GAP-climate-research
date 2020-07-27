@@ -39,12 +39,21 @@ airports <- airports.raw[, c(1:5, 14:16)]
 # Set column names
 setnames(airports, names(airports), c("ICAO", "IATA", "Airport Name",
          "City", "Country", "Altitude", "Latitude", "Longitude"))
+
+# Get destination airports
+airports.dests <- rbind(airports[IATA == 'PHL'],
+                             airports[IATA == 'SFO'],
+                             airports[IATA == 'JFK'])
+
+# Attach onto the convention center sheet
+conventions.airports <- cbind(conventions, airports.dests)
 ```
 
 ## Locate nearest aiport 
 ```{r NYC Airport Location}
 # It looks like there are quite a few airports w/o coordinates - drop these
-airport.coords <- airports[Latitude != 0 & Longitude != 0]
+# Keep only airports w/ IATA codes
+airport.coords <- airports[Latitude != 0 & Longitude != 0 & IATA != 'N/A']
 
 # Initialize logs
 nyc.airport.log <- rep(NA, nrow(nyc))
@@ -128,7 +137,7 @@ phl.final <- cbind(phl,
 final.sets <- list("NYC 2018" = nyc.final,
                  "SF 2019" = sf.final,
                  "PHL 2020" = phl.final,
-                 "Convention Centers" = conventions)
+                 "Convention Centers" = conventions.airports)
 
 write.xlsx(final.sets,
            file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance + Airport Data.xlsx")

@@ -1,0 +1,35 @@
+---
+title: "04.2 - Past APA Location Optimization"
+author: "Alec Stashevsky"
+date: "7/26/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(digits = 10) # need at least 8 decimal places for coordinates
+library(readxl)
+library(openxlsx)
+library(tidyverse)
+library(data.table)
+library(geosphere)
+library(maps)
+library(ggmap) # Need to cite 
+rm(list = ls()) # Clean R Environment
+```
+
+## Import APA Meeting Locations
+```{r Import}
+path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Data/APA Meeting Locations Timeline.xlsx"
+
+meetings <- read_excel(path.in) %>% setDT()
+```
+
+## Geocode
+```{r Geocoding NYC}
+# Geocode with Google Geocoding API - this will take some time
+meetings.geo <- mutate_geocode(meetings, location = Location)
+
+
+```
+
