@@ -1,7 +1,7 @@
 ---
 title: "06 - Carbon Emissions and Offset Pricing"
 author: "Alec Stashevsky"
-date: "7/19/2020"
+date: "7/31/2020"
 output: pdf_document
 ---
 
@@ -27,6 +27,7 @@ phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
 conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
   setDT()
 ```
+
 
 ## Aquire Carbon Footprint and Equivalent Offsets
 
@@ -135,7 +136,7 @@ for (i in 1:length(query.list.nyc)){
     },
     
       error = function(e){
-      print("NULL QUERY")
+      print(paste0("NULL QUERY ", i))
         
     })
 }
@@ -166,7 +167,7 @@ for (i in 1:length(query.list.sf)){
     },
     
       error = function(e){
-      print("NULL QUERY")
+      print(paste0("NULL QUERY ", i))
         
     })
 }
@@ -197,7 +198,7 @@ for (i in 1:length(query.list.phl)){
     },
     
       error = function(e){
-      print("NULL QUERY")
+      print(paste0("NULL QUERY ", i))
         
     })
 }

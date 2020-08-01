@@ -1,7 +1,7 @@
 ---
 title: "05 - Locating Nearest Airport"
 author: "Alec Stashevsky"
-date: "7/11/2020"
+date: "7/31/2020"
 output: pdf_document
 ---
 
@@ -15,6 +15,7 @@ library(geosphere)
 rm(list = ls()) # Clean R Environment
 ```
 
+
 ## Import APA Geodistance Data
 ```{r APA Import}
 path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
@@ -25,6 +26,7 @@ phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
 conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
   setDT()
 ```
+
 
 ## Import Global Airport Database 
 ```{r Airports Import}
@@ -49,12 +51,28 @@ airports.dests <- rbind(airports[IATA == 'PHL'],
 conventions.airports <- cbind(conventions, airports.dests)
 ```
 
-## Locate nearest aiport 
-```{r NYC Airport Location}
+
+## Clean Airport Database
+The airport data is assigning very small airports in about 5% of cases. The GoClimate API does not recognize these smaller airport's IATA codes, so we will reassign this list of misqueries to the next closest airports iteratively, until all are read by the API. 
+
+```{r Clean Airports}
+# Import the misqueries from first API run
+path.misqueries <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/GoClimate API Misqueries.xlsx"
+
+misqueries <- read_excel(path.misqueries, sheet = "Misqueries") %>% setDT()
+
 # It looks like there are quite a few airports w/o coordinates - drop these
 # Keep only airports w/ IATA codes
-airport.coords <- airports[Latitude != 0 & Longitude != 0 & IATA != 'N/A']
+airport.iata <- airports[Latitude != 0 & Longitude != 0 & IATA != 'N/A']
 
+# Remove rows with IATA code in mis-query data
+airport.coords <- airport.iata[!(IATA %in% misqueries$IATA)]
+
+```
+
+
+## Locate nearest aiport 
+```{r NYC Airport Location}
 # Initialize logs
 nyc.airport.log <- rep(NA, nrow(nyc))
 nyc.airport.dist <- rep(NA, nrow(nyc))
