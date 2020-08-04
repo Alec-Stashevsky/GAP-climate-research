@@ -111,6 +111,93 @@ for (i in 1:length(origins.phl)){
 }
 ```
 
+### Query Lists for past APA Meetings
+```{r Build Historical Query List}
+# Initialize variables
+historical.meetings <- c("JFK", "SFO", "PHL", "DCA", "YYZ", "ORD", "YUL", "ATL",
+                         "MSY", "DFW", "MIA", "SAN", "LAX", "HNL")
+
+# Initialize
+query.list.ny.hist <- list(JFK = rep(NA, length(origins.nyc)),
+                           SFO = rep(NA, length(origins.nyc)),
+                           PHL = rep(NA, length(origins.nyc)),
+                           DCA = rep(NA, length(origins.nyc)),
+                           YYZ = rep(NA, length(origins.nyc)),
+                           ORD = rep(NA, length(origins.nyc)),
+                           YUL = rep(NA, length(origins.nyc)),
+                           ATL = rep(NA, length(origins.nyc)),
+                           MSY = rep(NA, length(origins.nyc)),
+                           DFW = rep(NA, length(origins.nyc)),
+                           MIA = rep(NA, length(origins.nyc)),
+                           SAN = rep(NA, length(origins.nyc)),
+                           LAX = rep(NA, length(origins.nyc)),
+                           HNL = rep(NA, length(origins.nyc))
+                           )
+
+## NYC Base
+for (dest in historical.meetings){
+  
+  for (i in 1:length(origins.nyc)){
+
+    query <- paste0("https://api.goclimate.com/v1/flight_footprint?segments[0][origin]=",
+                origins.nyc[i],          # Loop through each unique origin airport
+                "&segments[0][destination]=",
+                dest,         # Nearest airport to convention center
+                "&segments[1][origin]=",
+                dest,         # 2nd-leg of round trip flight
+                "&segments[1][destination]=",
+                origins.nyc[i],          # Return home
+                "&cabin_class=",
+                seat.class,              # Seat class of passenger
+                "&currencies[]=USD")     # Price offsets in USD
+    
+    query.list.ny.hist[[dest]][i] <- query
+    
+  }
+}
+
+## SF Base
+# Initialize
+query.list.sf.hist <- list(JFK = rep(NA, length(origins.sf)),
+                           SFO = rep(NA, length(origins.sf)),
+                           PHL = rep(NA, length(origins.sf)),
+                           DCA = rep(NA, length(origins.sf)),
+                           YYZ = rep(NA, length(origins.sf)),
+                           ORD = rep(NA, length(origins.sf)),
+                           YUL = rep(NA, length(origins.sf)),
+                           ATL = rep(NA, length(origins.sf)),
+                           MSY = rep(NA, length(origins.sf)),
+                           DFW = rep(NA, length(origins.sf)),
+                           MIA = rep(NA, length(origins.sf)),
+                           SAN = rep(NA, length(origins.sf)),
+                           LAX = rep(NA, length(origins.sf)),
+                           HNL = rep(NA, length(origins.sf))
+                           )
+
+
+
+for (dest in historical.meetings){
+  
+  for (i in 1:length(origins.sf)){
+
+    query <- paste0("https://api.goclimate.com/v1/flight_footprint?segments[0][origin]=",
+                origins.sf[i],          # Loop through each unique origin airport
+                "&segments[0][destination]=",
+                dest,         # Nearest airport to convention center
+                "&segments[1][origin]=",
+                dest,         # 2nd-leg of round trip flight
+                "&segments[1][destination]=",
+                origins.sf[i],          # Return home
+                "&cabin_class=",
+                seat.class,              # Seat class of passenger
+                "&currencies[]=USD")     # Price offsets in USD
+    
+    query.list.sf.hist[[dest]][i] <- query
+    
+  }
+}
+```
+
 
 ### Query Attendee Data
 ```{r API Query NYC}
@@ -219,3 +306,125 @@ final.sets <- list("NYC 2018" = nyc.emissions,
 write.xlsx(final.sets,
            file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Attendee Emissions Data.xlsx")
 ```
+
+### Query Data for past APA Meetings
+```{r Historical Queries NYC}
+
+# Initialize query responses
+resp.footprint <- as.vector(rep(NA, length(origins.nyc)))
+resp.offsets <- rep(NA, length(origins.nyc)) 
+
+# Loop through all queries in query.list
+for (dest in historical.meetings){
+  for (i in 1:length(origins.nyc)){
+
+    r <- GET(query.list.ny.hist[[dest]][i],
+             authenticate(api.key, ""))
+    
+    c <- fromJSON(content(r, as = "text"))
+    
+    # Ignore null return values from API
+    tryCatch({ 
+      resp.footprint[i] <- as.numeric(c$footprint)
+      resp.offsets[i] <- as.numeric(c$offset_prices[1])
+    },
+    
+      error = function(e){
+      print(paste0("NULL QUERY ", i))
+        
+    })
+  }
+  
+  assign(paste0("emissions.ny.", dest), 
+         data.table(cbind(Footprint = resp.footprint,
+               Offset = resp.offsets
+               )
+         ))
+}
+
+# Merge data together
+historical.emissions.nyc <- cbind(emissions.ny.JFK, emissions.ny.SFO,
+                                  emissions.ny.PHL, emissions.ny.DCA,
+                                  emissions.ny.YYZ, emissions.ny.ORD,
+                                  emissions.ny.YUL, emissions.ny.ATL,
+                                  emissions.ny.MSY, emissions.ny.DFW,
+                                  emissions.ny.MIA, emissions.ny.SAN,
+                                  emissions.ny.LAX, emissions.ny.HNL)
+
+# Rename columns
+name.vec <- rep(NA, 22)
+i <- 1
+
+for (dest in historical.meetings){
+  name.vec[i] <- paste0("Footprint.", dest)
+  name.vec[i+1] <- paste0("Offest.", dest)
+  i <- i+2
+}
+
+setnames(historical.emissions.nyc, name.vec)
+hist.export.nyc <- cbind(nyc, historical.emissions.nyc)
+
+# Export 
+write.xlsx(hist.export.nyc, 
+           "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Historical Emissions Data.xlsx")
+
+```
+
+
+```{r Historical Queries SF}
+
+# Initialize query responses
+resp.footprint <- as.vector(rep(NA, length(origins.sf)))
+resp.offsets <- rep(NA, length(origins.sf)) 
+
+# Loop through all queries in query.list
+for (dest in historical.meetings){
+  for (i in 1:length(origins.sf)){
+
+    r <- GET(query.list.sf.hist[[dest]][i],
+             authenticate(api.key, ""))
+    
+    c <- fromJSON(content(r, as = "text"))
+    
+    # Ignore null return values from API
+    tryCatch({ 
+      resp.footprint[i] <- as.numeric(c$footprint)
+      resp.offsets[i] <- as.numeric(c$offset_prices[1])
+    },
+    
+      error = function(e){
+      print(paste0("NULL QUERY ", i))
+        
+    })
+  }
+  
+  assign(paste0("emissions.sf.", dest), 
+         data.table(cbind(Footprint = resp.footprint,
+               Offset = resp.offsets
+               )
+         ))
+}
+
+# Merge data together
+historical.emissions.sf <- cbind(emissions.sf.JFK, emissions.sf.SFO,
+                                 emissions.sf.PHL, emissions.sf.DCA,
+                                 emissions.sf.YYZ, emissions.sf.ORD,
+                                 emissions.sf.YUL, emissions.sf.ATL,
+                                 emissions.sf.MSY, emissions.sf.DFW,
+                                 emissions.sf.MIA, emissions.sf.SAN,
+                                 emissions.sf.LAX, emissions.sf.HNL)
+# Rename columns
+setnames(historical.emissions.sf, name.vec)
+hist.export.sf <- cbind(sf, historical.emissions.sf)
+
+final.emissions.sets <- list("NYC BASE" = hist.export.nyc,
+                             "SF BASE" = hist.export.sf)
+
+write.xlsx(final.emissions.sets,
+           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Attendee Emissions Data.xlsx")
+
+
+
+
+```
+
