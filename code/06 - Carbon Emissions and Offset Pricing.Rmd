@@ -304,7 +304,7 @@ final.sets <- list("NYC 2018" = nyc.emissions,
                  "Convention Centers" = conventions)
 
 write.xlsx(final.sets,
-           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Attendee Emissions Data.xlsx")
+           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Attendee Emissions Data (Actual Conference locations only).xlsx")
 ```
 
 ### Query Data for past APA Meetings
