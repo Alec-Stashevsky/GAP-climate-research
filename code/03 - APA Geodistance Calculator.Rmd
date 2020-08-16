@@ -20,7 +20,7 @@ rm(list = ls()) # Clean R Environment
 ```{r Import}
 path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx"
 
-path.convention <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx"
+path.convention <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx"
 
 nyc.raw <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf.raw <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
@@ -50,57 +50,160 @@ phl <- phl.raw[!is.na(lat) | !is.na(lon)]
 ## Calculate Geodistance to Convention Center
 ```{r Geodistance}
 # Get convention center coordinates
-nyc.dest <- as.numeric(conventions[STATE =="NY", c('lon', 'lat')])
-sf.dest <- as.numeric(conventions[STATE =="CA", c('lon', 'lat')])
-phl.dest <- as.numeric(conventions[STATE =="PA", c('lon', 'lat')])
+nyc.dest <- as.numeric(conventions[Name =="Javitz Center", c('lon', 'lat')])
+sf.dest <- as.numeric(conventions[Name =="Moscone Center", c('lon', 'lat')])
+phl.dest <- as.numeric(conventions[Name =="Pennsylvania Convention center",
+                                   c('lon', 'lat')])
+
+dests <- conventions[, .(lon, lat)]
 
 # Calculate Geodistance in meters - with ellipsoidal method
-nyc.gdist <- as.data.table(distGeo(nyc[, c('lon', 'lat')], nyc.dest))
-sf.gdist <- as.data.table(distGeo(sf[, c('lon', 'lat')], sf.dest))
-phl.gdist <- as.data.table(distGeo(phl[, c('lon', 'lat')], phl.dest))
+for(i in 1:nrow(conventions)){
+  assign(paste0("nyc.gdist.", conventions$CITY[i]),
+        distGeo(nyc[, c('lon', 'lat')], dests[i]))
+}
+
+for(i in 1:nrow(conventions)){
+  assign(paste0("sf.gdist.", conventions$CITY[i]),
+        distGeo(sf[, c('lon', 'lat')], dests[i]))
+}
+
+for(i in 1:nrow(conventions)){
+  assign(paste0("phl.gdist.", conventions$CITY[i]),
+        distGeo(phl[, c('lon', 'lat')], dests[i]))
+}
+# Merge distances together
+nyc.gdist.total <- as.data.table(cbind(gdist.PHL = nyc.gdist.Philadelphia,
+                                       gdist.SFO = `nyc.gdist.San Francisco`,
+                                       gdist.JFK = `nyc.gdist.New York City`,
+                                       gdist.ORD = nyc.gdist.Chicago,
+                                       gdist.MSY = `nyc.gdist.New Orleans`,
+                                       gdist.YYZ = nyc.gdist.Toronto,
+                                       gdist.LAX = `nyc.gdist.Los Angeles`,
+                                       gdist.DFW = nyc.gdist.Dallas,
+                                       gdist.DCA = `nyc.gdist.Washington DC`,
+                                       gdist.YUL = nyc.gdist.Montreal,
+                                       gdist.MIA = nyc.gdist.Miami,
+                                       gdist.SAN = `nyc.gdist.San Diego`,
+                                       gdist.ATL = nyc.gdist.Atlanta,
+                                       gdist.HNL = nyc.gdist.Honolulu))
+
+sf.gdist.total <- as.data.table(cbind(gdist.PHL = sf.gdist.Philadelphia,
+                                      gdist.SFO = `sf.gdist.San Francisco`,
+                                      gdist.JFK = `sf.gdist.New York City`,
+                                      gdist.ORD = sf.gdist.Chicago,
+                                      gdist.MSY = `sf.gdist.New Orleans`,
+                                      gdist.YYZ = sf.gdist.Toronto,
+                                      gdist.LAX = `sf.gdist.Los Angeles`,
+                                      gdist.DFW = sf.gdist.Dallas,
+                                      gdist.DCA = `sf.gdist.Washington DC`,
+                                      gdist.YUL = sf.gdist.Montreal,
+                                      gdist.MIA = sf.gdist.Miami,
+                                      gdist.SAN = `sf.gdist.San Diego`,
+                                      gdist.ATL = sf.gdist.Atlanta,
+                                      gdist.HNL = sf.gdist.Honolulu))
+
+phl.gdist.total <- as.data.table(cbind(gdist.PHL = phl.gdist.Philadelphia,
+                                       gdist.SFO = `phl.gdist.San Francisco`,
+                                       gdist.JFK = `phl.gdist.New York City`,
+                                       gdist.ORD = phl.gdist.Chicago,
+                                       gdist.MSY = `phl.gdist.New Orleans`,
+                                       gdist.YYZ = phl.gdist.Toronto,
+                                       gdist.LAX = `phl.gdist.Los Angeles`,
+                                       gdist.DFW = phl.gdist.Dallas,
+                                       gdist.DCA = `phl.gdist.Washington DC`,
+                                       gdist.YUL = phl.gdist.Montreal,
+                                       gdist.MIA = phl.gdist.Miami,
+                                       gdist.SAN = `phl.gdist.San Diego`,
+                                       gdist.ATL = phl.gdist.Atlanta,
+                                       gdist.HNL = phl.gdist.Honolulu))
 
 # Merge onto Geo-unique data
-final.nyc <- cbind(nyc, Meters = nyc.gdist)
-final.sf <- cbind(sf, Meters = sf.gdist)
-final.phl <- cbind(phl, Meters = phl.gdist)
+final.nyc <- cbind(nyc, nyc.gdist.total)
+final.sf <- cbind(sf, sf.gdist.total)
+final.phl <- cbind(phl, phl.gdist.total)
 
 # Create indicator variable for driving if less than 400 km away from meeting
-final.nyc[, drive := ifelse(Meters.V1 <= 400000, 1, 0)]
-final.sf[, drive := ifelse(Meters.V1 <= 400000, 1, 0)]
-final.phl[, drive := ifelse(Meters.V1 <= 400000, 1, 0)]
+final.nyc[, `:=`(drive.PHL = ifelse(gdist.PHL <= 400000, 1, 0),
+                 drive.SFO = ifelse(gdist.SFO <= 400000, 1, 0),
+                 drive.JFK = ifelse(gdist.JFK <= 400000, 1, 0),
+                 drive.ORD = ifelse(gdist.ORD <= 400000, 1, 0),
+                 drive.MSY = ifelse(gdist.MSY <= 400000, 1, 0),
+                 drive.YYZ = ifelse(gdist.YYZ <= 400000, 1, 0),
+                 drive.LAX = ifelse(gdist.LAX <= 400000, 1, 0),
+                 drive.DFW = ifelse(gdist.DFW <= 400000, 1, 0),
+                 drive.DCA = ifelse(gdist.DCA <= 400000, 1, 0),
+                 drive.YUL = ifelse(gdist.YUL <= 400000, 1, 0),
+                 drive.MIA = ifelse(gdist.MIA <= 400000, 1, 0),
+                 drive.SAN = ifelse(gdist.SAN <= 400000, 1, 0),
+                 drive.ATL = ifelse(gdist.ATL <= 400000, 1, 0),
+                 drive.HNL = ifelse(gdist.HNL <= 400000, 1, 0)
+                 )]
+
+final.sf[, `:=`(drive.PHL = ifelse(gdist.PHL <= 400000, 1, 0),
+                drive.SFO = ifelse(gdist.SFO <= 400000, 1, 0),
+                drive.JFK = ifelse(gdist.JFK <= 400000, 1, 0),
+                drive.ORD = ifelse(gdist.ORD <= 400000, 1, 0),
+                drive.MSY = ifelse(gdist.MSY <= 400000, 1, 0),
+                drive.YYZ = ifelse(gdist.YYZ <= 400000, 1, 0),
+                drive.LAX = ifelse(gdist.LAX <= 400000, 1, 0),
+                drive.DFW = ifelse(gdist.DFW <= 400000, 1, 0),
+                drive.DCA = ifelse(gdist.DCA <= 400000, 1, 0),
+                drive.YUL = ifelse(gdist.YUL <= 400000, 1, 0),
+                drive.MIA = ifelse(gdist.MIA <= 400000, 1, 0),
+                drive.SAN = ifelse(gdist.SAN <= 400000, 1, 0),
+                drive.ATL = ifelse(gdist.ATL <= 400000, 1, 0),
+                drive.HNL = ifelse(gdist.HNL <= 400000, 1, 0)
+                )]
+
+final.phl[, `:=`(drive.PHL = ifelse(gdist.PHL <= 400000, 1, 0),
+                 drive.SFO = ifelse(gdist.SFO <= 400000, 1, 0),
+                 drive.JFK = ifelse(gdist.JFK <= 400000, 1, 0),
+                 drive.ORD = ifelse(gdist.ORD <= 400000, 1, 0),
+                 drive.MSY = ifelse(gdist.MSY <= 400000, 1, 0),
+                 drive.YYZ = ifelse(gdist.YYZ <= 400000, 1, 0),
+                 drive.LAX = ifelse(gdist.LAX <= 400000, 1, 0),
+                 drive.DFW = ifelse(gdist.DFW <= 400000, 1, 0),
+                 drive.DCA = ifelse(gdist.DCA <= 400000, 1, 0),
+                 drive.YUL = ifelse(gdist.YUL <= 400000, 1, 0),
+                 drive.MIA = ifelse(gdist.MIA <= 400000, 1, 0),
+                 drive.SAN = ifelse(gdist.SAN <= 400000, 1, 0),
+                 drive.ATL = ifelse(gdist.ATL <= 400000, 1, 0),
+                 drive.HNL = ifelse(gdist.HNL <= 400000, 1, 0)
+                 )]
 ```
 
 
 ## Descriptive Statistics
 ```{r Geodistance Stats}
 # Summary Stats for unique location 
-summary(final.nyc$Meters.V1)
-summary(final.sf$Meters.V1)
-summary(final.phl$Meters.V1)
+summary(final.nyc$gdist.JFK)
+summary(final.sf$gdist.SFO)
+summary(final.phl$gdist.PHL)
 # For some reason there is a single NA values in each set
 
 # Summary Stats for total distances traveled
-summary(final.nyc$Frequency * final.nyc$Meters.V1)
-summary(final.sf$Frequency * final.sf$Meters.V1)
-summary(final.phl$Frequency * final.phl$Meters.V1)
+summary(final.nyc$Frequency * final.nyc$gdist.JFK)
+summary(final.sf$Frequency * final.sf$gdist.SFO)
+summary(final.phl$Frequency * final.phl$gdist.PHL)
 
 # Total distance traveled in kilometers
-total.nyc <- sum(final.nyc$Frequency * final.nyc$Meters.V1, na.rm = TRUE)/1000
-total.sf <- sum(final.sf$Frequency * final.sf$Meters.V1, na.rm = TRUE)/1000
-total.phl <- sum(final.phl$Frequency * final.phl$Meters.V1, na.rm = TRUE)/1000
+total.nyc <- sum(final.nyc$Frequency * final.nyc$gdist.JFK, na.rm = TRUE)/1000
+total.sf <- sum(final.sf$Frequency * final.sf$gdist.SFO, na.rm = TRUE)/1000
+total.phl <- sum(final.phl$Frequency * final.phl$gdist.PHL, na.rm = TRUE)/1000
 total.distance <- rbind(total.nyc, total.sf, total.phl)
 ```
 
 ```{r Drive/Fly}
 # Filter for drivers
-drive.nyc <- final.nyc[drive == 1]
-drive.sf <- final.sf[drive == 1]
-drive.phl <- final.phl[drive == 1]
+drive.nyc <- final.nyc[drive.JFK == 1]
+drive.sf <- final.sf[drive.SFO == 1]
+drive.phl <- final.phl[drive.PHL == 1]
 
 # Filter to flyers
-fly.nyc <- final.nyc[drive != 1]
-fly.sf <- final.sf[drive != 1]
-fly.phl <- final.phl[drive != 1]
+fly.nyc <- final.nyc[drive.JFK != 1]
+fly.sf <- final.sf[drive.SFO != 1]
+fly.phl <- final.phl[drive.PHL != 1]
 
 # Calculated percentage of drivers
 nyc.drive.prop <- sum(drive.nyc$Frequency) / sum(final.nyc$Frequency)
@@ -109,29 +212,29 @@ phl.drive.prop <- sum(drive.phl$Frequency) / sum(final.phl$Frequency)
 drive.prop <- rbind(nyc.drive.prop, sf.drive.prop, phl.drive.prop)
 
 # Summary Stats for total distances traveled
-summary(drive.nyc$Frequency * drive.nyc$Meters.V1)
-summary(drive.sf$Frequency * drive.sf$Meters.V1)
-summary(drive.phl$Frequency * drive.phl$Meters.V1)
-summary(fly.nyc$Frequency * fly.nyc$Meters.V1)
-summary(fly.sf$Frequency * fly.sf$Meters.V1)
-summary(fly.phl$Frequency * fly.phl$Meters.V1)
+summary(drive.nyc$Frequency * drive.nyc$gdist.JFK)
+summary(drive.sf$Frequency * drive.sf$gdist.SFO)
+summary(drive.phl$Frequency * drive.phl$gdist.PHL)
+summary(fly.nyc$Frequency * fly.nyc$gdist.JFK)
+summary(fly.sf$Frequency * fly.sf$gdist.SFO)
+summary(fly.phl$Frequency * fly.phl$gdist.PHL)
 
 # Total one-way distance traveled in kilometers
 ## Drivers
-total.drive.nyc <- sum(drive.nyc$Frequency * drive.nyc$Meters.V1,
+total.drive.nyc <- sum(drive.nyc$Frequency * drive.nyc$gdist.JFK,
                        na.rm = TRUE)/1000
-total.drive.sf <- sum(drive.sf$Frequency * drive.sf$Meters.V1,
+total.drive.sf <- sum(drive.sf$Frequency * drive.sf$gdist.SFO,
                       na.rm = TRUE)/1000
-total.drive.phl <- sum(drive.phl$Frequency * drive.phl$Meters.V1,
+total.drive.phl <- sum(drive.phl$Frequency * drive.phl$gdist.PHL,
                        na.rm = TRUE)/1000
 total.drive <- rbind(total.drive.nyc, total.drive.sf, total.drive.phl)
 
 ## Flyers
-total.fly.nyc <- sum(fly.nyc$Frequency * fly.nyc$Meters.V1,
+total.fly.nyc <- sum(fly.nyc$Frequency * fly.nyc$gdist.JFK,
                        na.rm = TRUE)/1000
-total.fly.sf <- sum(fly.sf$Frequency * fly.sf$Meters.V1,
+total.fly.sf <- sum(fly.sf$Frequency * fly.sf$gdist.SFO,
                       na.rm = TRUE)/1000
-total.fly.phl <- sum(fly.phl$Frequency * fly.phl$Meters.V1,
+total.fly.phl <- sum(fly.phl$Frequency * fly.phl$gdist.PHL,
                        na.rm = TRUE)/1000
 total.fly <- rbind(total.fly.nyc, total.fly.sf, total.fly.phl)
 
@@ -156,26 +259,26 @@ phl.dom.prop <- sum(dom.phl$Frequency) / sum(final.phl$Frequency)
 dom.prop <- rbind(nyc.dom.prop, sf.dom.prop, phl.dom.prop)
 
 # Summary Stats for total distances traveled
-summary(dom.nyc$Frequency * dom.nyc$Meters.V1)
-summary(dom.sf$Frequency * dom.sf$Meters.V1)
-summary(dom.phl$Frequency * dom.phl$Meters.V1)
-summary(intl.nyc$Frequency * intl.nyc$Meters.V1)
-summary(intl.sf$Frequency * intl.sf$Meters.V1)
-summary(intl.phl$Frequency * intl.phl$Meters.V1)
+summary(dom.nyc$Frequency * dom.nyc$gdist.JFK)
+summary(dom.sf$Frequency * dom.sf$gdist.SFO)
+summary(dom.phl$Frequency * dom.phl$gdist.PHL)
+summary(intl.nyc$Frequency * intl.nyc$gdist.JFK)
+summary(intl.sf$Frequency * intl.sf$gdist.SFO)
+summary(intl.phl$Frequency * intl.phl$gdist.PHL)
 
 # Total one-way distance traveled in kilometers
-total.dom.nyc <- sum(dom.nyc$Frequency * dom.nyc$Meters.V1, na.rm = TRUE)/1000
-total.dom.sf <- sum(dom.sf$Frequency * dom.sf$Meters.V1, na.rm = TRUE)/1000
-total.dom.phl <- sum(dom.phl$Frequency * dom.phl$Meters.V1, na.rm = TRUE)/1000
+total.dom.nyc <- sum(dom.nyc$Frequency * dom.nyc$gdist.JFK, na.rm = TRUE)/1000
+total.dom.sf <- sum(dom.sf$Frequency * dom.sf$gdist.SFO, na.rm = TRUE)/1000
+total.dom.phl <- sum(dom.phl$Frequency * dom.phl$gdist.PHL, na.rm = TRUE)/1000
 total.domestic <- rbind(total.dom.nyc, total.dom.sf, total.dom.phl)
 
 # Total one-way distance traveled in kilometers
 total.intl.nyc <- sum(intl.nyc$Frequency *
-                        intl.nyc$Meters.V1, na.rm = TRUE)/1000
+                        intl.nyc$gdist.JFK, na.rm = TRUE)/1000
 total.intl.sf <- sum(intl.sf$Frequency *
-                       intl.sf$Meters.V1, na.rm = TRUE)/1000
+                       intl.sf$gdist.SFO, na.rm = TRUE)/1000
 total.intl.phl <- sum(intl.phl$Frequency *
-                        intl.phl$Meters.V1, na.rm = TRUE)/1000
+                        intl.phl$gdist.PHL, na.rm = TRUE)/1000
 total.international <- rbind(total.intl.nyc, total.intl.sf, total.intl.phl)
 
 # Combine distances into data.fame

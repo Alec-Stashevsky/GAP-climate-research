@@ -44,8 +44,20 @@ setnames(airports, names(airports), c("ICAO", "IATA", "Airport Name",
 
 # Get destination airports
 airports.dests <- rbind(airports[IATA == 'PHL'],
-                             airports[IATA == 'SFO'],
-                             airports[IATA == 'JFK'])
+                        airports[IATA == 'SFO'],
+                        airports[IATA == 'JFK'],
+                        airports[IATA == 'ORD'],
+                        airports[IATA == 'MSY'],
+                        airports[IATA == 'YYZ'],
+                        airports[IATA == 'LAX'],
+                        airports[IATA == 'DFW'],
+                        airports[IATA == 'DCA'],
+                        airports[IATA == 'YUL'],
+                        airports[IATA == 'MIA'],
+                        airports[IATA == 'SAN'],
+                        airports[IATA == 'ATL'],
+                        airports[IATA == 'HNL']
+                        )
 
 # Attach onto the convention center sheet
 conventions.airports <- cbind(conventions, airports.dests)

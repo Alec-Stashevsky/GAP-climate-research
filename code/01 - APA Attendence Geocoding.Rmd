@@ -12,6 +12,7 @@ library(data.table)
 library(readxl)
 library(openxlsx)
 library(ggmap) # Need to cite 
+rm(list = ls()) # Clean R Environment
 ```
 
 
@@ -153,24 +154,14 @@ phl.geo[is.na(lat) | is.na(lon)]
 ```
 
 ```{r Convention Centers}
-# Create small data set with convention geodata
-convention.names <- c("Pennsylvania Convention center",
-                       "Moscone Center", "Javitz Center")
-convention.cities <- c("Philadelphia", "San Francisco", "New York City")        
-convention.states <- c("PA", "CA", "NY")
-convention.countries <- rep("United States", 3)
-
-conventions <- data.table(convention.names,
-                          convention.cities,
-                          convention.states,
-                          convention.countries,
-                          convention.address)
-  
-# Fix columns names to match attendance data
-names(conventions) <- c("Name", colnames(nyc.prep)[2:5])
+# Import list of convention centers
+convention.import <- read_excel("C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/Convention Centers.xlsx", range = "A1:E15")
 
 # Geocode conventions centers
-conventions.geo <- mutate_geocode(conventions, location = location)
+conventions.geo <- mutate_geocode(convention.import, location = location)
+
+# Export 
+write.xlsx(conventions.geo, "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx")
 ```
 
 ```{r Final Write}
