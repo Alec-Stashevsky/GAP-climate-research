@@ -38,8 +38,13 @@ conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>% setDT()
 pdf(file = "APA Flight Netowrks.pdf")
 # Pull origin coordinates and frequency - reduce duplicates
 # ************************ NEED TO FINE TUNE THE DE-DUPE
-nyc.origin <- unique(nyc[, Frequency := .N, by = .(lon, lat)],
+nyc.origin <- unique(nyc[, Frequency := .N, by = .(ATTENDEE_STATUS, lon, lat)],
+                     by = c('ATTENDEE_STATUS', 'lon', 'lat'))
+
+nyc.origin2 <- unique(nyc[, Frequency := .N, by = .(lon, lat)],
                      by = c('lon', 'lat'))
+
+nyc.resid <- nyc.origin[!nyc.origin2, on = c('ATTENDEE_STATUS', 'lon', 'lat')]
 
 # Create Javitz center coordinate vector
 nyc.dest <- as.numeric(conventions[STATE =="NY", c('lon', 'lat')])
@@ -340,8 +345,15 @@ title(main = "APA Annual Conference Flight Network",
 ```{r Flight Network Plot SF}
 # Pull origin coordinates and frequency - reduce duplicates
 # ************************ NEED TO FINE TUNE THE DE-DUPE
-sf.origin <- unique(sf[, Frequency := .N, by = .(lon, lat)],
+sf.origin <- unique(sf[, Frequency := .N, by = .(ATTENDEE_STATUS,lon, lat)],
+                     by = c('ATTENDEE_STATUS', 'lon', 'lat'))
+
+sf.origin2 <- unique(sf[, Frequency := .N, by = .(lon, lat)],
                      by = c('lon', 'lat'))
+
+sf.resid <- sf.origin[!sf.origin2, on = c('ATTENDEE_STATUS', 'lon', 'lat')]
+
+
 sf.origin.us <- sf.origin[COUNTRY == "United States" |
                             COUNTRY == "US" |
                             STATE %in% state.abb]
@@ -795,7 +807,9 @@ dev.off()
 
 ```{r Write Geo-Unique Frequncy Data}
 origin.sets <- list("NYC 2018" = nyc.origin,
+                    "NYC Residual" = nyc.resid,
                  "SF 2019" = sf.origin,
+                 "SF Residual" = sf.resid,
                  "PHL 2020" = phl.origin)
 
 write.xlsx(origin.sets,
