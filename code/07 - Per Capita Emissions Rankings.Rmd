@@ -1,0 +1,238 @@
+---
+title: "07 - Per Capita Emissions Rankings"
+author: "Alec Stashevsky"
+date: "8/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+library(readxl)
+library(openxlsx)
+library(ggmap) # Need to cite 
+library(maps)
+library(rgeos)
+library(maptools)
+library(geosphere)
+library(gridExtra)
+library(grid)
+library(plyr)
+rm(list = ls()) # Clean R Environment
+```
+
+
+## Import Per Capita Emissions Analysis
+```{r Import}
+path.emissions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Analysis/APA Emissions Per Capita.xlsx"
+path.conventions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx"
+
+total <- read_excel(path.emissions, sheet = "Emissions Overview") %>% setDT()
+drivers <- read_excel(path.emissions, sheet = "Drivers Only") %>% setDT()
+
+conventions <- read_xlsx(path.conventions, sheet = "Convention Centers") %>%
+  setDT()
+```
+
+
+## Plot Map
+```{r Prep}
+# Merge coordinates onto emissions
+plot.data <- cbind(total[2:15], conventions[, .(CITY, IATA, lon, lat)])
+
+# Parameterize colors
+col.nyc <- adjustcolor("orange red", alpha=0.4)
+col.sf <- adjustcolor("cyan", alpha=0.4)
+
+# Create table grid
+d <- plot.data[, .(CITY, `NYC 2018 per Capita`, `SF 2019 per Capita`)]
+d$`NYC 2018 per Capita` <- round(d$`NYC 2018 per Capita`)
+d$`SF 2019 per Capita` <- round(d$`SF 2019 per Capita`)
+setnames(d, c("City", "NYC CO2e per Attendee", "SF CO2e per Attendee"))
+
+grid.table(d)
+
+pdf(file = "APA Travels Emissions Plot.pdf")
+```
+
+
+```{r Plot1}
+# Plot 15 best sample coordinates to create region of confidence
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+# NYC
+points(x = plot.data$lon,
+       y = plot.data$lat,
+       col = col.nyc,
+       pch = 21,
+       lwd = 2,
+       cex = (plot.data$`NYC 2018 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                   plot.data$`SF 2019 per Capita`)*80)
+
+# SF
+points(x = plot.data$lon,
+       y = plot.data$lat,
+       col = col.sf, 
+       pch = 21,
+       lwd = 2,
+       cex = (plot.data$`SF 2019 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                   plot.data$`SF 2019 per Capita`)*80)
+
+# City Labels
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = "white",
+     pos = 1,
+     cex = 0.18,
+     offset = -0.10,
+     labels = plot.data$CITY
+     )
+
+title(main = "APA Travel Emissions Ranking - Option 1",
+      col.main = "white")
+
+legend("bottom", legend=c("NYC 2018", "SF 2019"),
+       col=c("orange red", "cyan"), lty = 1, lwd = 1.2,  cex=0.5,
+       bg = "black",
+       text.col = "white")
+
+```
+
+
+```{r Plot2}
+# Plot 15 best sample coordinates to create region of confidence
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+# NYC
+points(x = plot.data$lon,
+       y = plot.data$lat,
+       col = col.nyc,
+       pch = 16,
+       lwd = 2,
+       cex = (plot.data$`NYC 2018 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                   plot.data$`SF 2019 per Capita`)*80)
+
+# SF
+points(x = plot.data$lon,
+       y = plot.data$lat,
+       col = col.sf, 
+       pch = 16,
+       lwd = 2,
+       cex = (plot.data$`SF 2019 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                   plot.data$`SF 2019 per Capita`)*80)
+
+# City Labels
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = "white",
+     pos = 1,
+     cex = 0.18,
+     offset = 0.65,
+     labels = plot.data$CITY
+     )
+
+title(main = "APA Travel Emissions Ranking - Option 2",
+      col.main = "white")
+
+legend("bottom", legend=c("NYC 2018", "SF 2019"),
+       col=c("orange red", "cyan"), lty = 1, lwd = 1.2,  cex=0.5,
+       bg = "black",
+       text.col = "white")
+
+```
+
+
+
+```{r Plot3}
+# Plot 15 best sample coordinates to create region of confidence
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+# NYC
+# points(x = plot.data$lon,
+#        y = plot.data$lat,
+#        col = col.nyc,
+#        pch = 21,
+#        lwd = 2,
+#        cex = (plot.data$`NYC 2018 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+#                                                    plot.data$`SF 2019 per Capita`)*80)
+# 
+# # SF
+# points(x = plot.data$lon,
+#        y = plot.data$lat,
+#        col = col.sf, 
+#        pch = 21,
+#        lwd = 2,
+#        cex = (plot.data$`SF 2019 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+#                                                    plot.data$`SF 2019 per Capita`)*80)
+
+# City Labels
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = "white",
+     pos = 1,
+     cex = (plot.data$`SF 2019 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                      plot.data$`SF 2019 per Capita`)*15,
+     offset = -0.10,
+     labels = plot.data$CITY
+     )
+
+title(main = "APA Travel Emissions Ranking - Option 3",
+      col.main = "white")
+
+# legend("bottom", legend=c("NYC 2018", "SF 2019"),
+#        col=c("orange red", "cyan"), lty = 1, lwd = 1.2,  cex=0.5,
+#        bg = "black",
+#        text.col = "white")
+```
+
+```{r Plot4}
+# Plot 15 best sample coordinates to create region of confidence
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+# NYC
+points(x = plot.data$lon,
+       y = plot.data$lat,
+       col = col.nyc,
+       pch = 21,
+       lwd = 3,
+       cex = (plot.data$`NYC 2018 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                   plot.data$`SF 2019 per Capita`)*80)
+
+# SF
+points(x = plot.data$lon,
+       y = plot.data$lat,
+       col = col.sf, 
+       pch = 21,
+       lwd = 3,
+       cex = (plot.data$`SF 2019 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                   plot.data$`SF 2019 per Capita`)*80)
+
+# City Labels
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = "white",
+     pos = 1,
+     cex = 0.18,
+     offset = -0.13,
+     labels = plot.data$CITY
+     )
+
+title(main = "APA Travel Emissions Ranking - Option 4",
+      col.main = "white")
+
+legend("bottom", legend=c("NYC 2018: 16620 Attendees", "SF 2019: 13335 Attendees"),
+       col=c("orange red", "cyan"), lty = 1, lwd = 1.2,  cex=0.5,
+       bg = "black",
+       text.col = "white")
+
+dev.off()
+```
