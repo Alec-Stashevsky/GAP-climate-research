@@ -44,6 +44,7 @@ plot.data <- cbind(total[2:15], conventions[, .(CITY, IATA, lon, lat)])
 # Parameterize colors
 col.nyc <- adjustcolor("orange red", alpha=0.4)
 col.sf <- adjustcolor("cyan", alpha=0.4)
+col.text <- adjustcolor("white", alpha = 0.8)
 
 # Create table grid
 d <- plot.data[, .(CITY, `NYC 2018 per Capita`, `SF 2019 per Capita`)]
@@ -227,6 +228,146 @@ text(x = plot.data$lon,
      )
 
 title(main = "APA Travel Emissions Ranking - Option 4",
+      col.main = "white")
+
+legend("bottom", legend=c("NYC 2018: 16620 Attendees", "SF 2019: 13335 Attendees"),
+       col=c("orange red", "cyan"), lty = 1, lwd = 1.2,  cex=0.5,
+       bg = "black",
+       text.col = "white")
+```
+
+```{r Plot5}
+# Plot 15 best sample coordinates to create region of confidence
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+# NYC
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = col.nyc,
+     pch = 21,
+     pos = 1,
+     labels = plot.data$`NYC Delta % Increase`,
+     cex = (plot.data$`NYC 2018 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                 plot.data$`SF 2019 per Capita`)*10)
+
+# SF
+# NYC
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = col.sf,
+     pch = 21,
+     pos = 1,
+     offset = -0.2,
+     labels = plot.data$`SF Delta % Increase`,
+     cex = (plot.data$`SF 2019 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                 plot.data$`SF 2019 per Capita`)*10)
+
+# City Labels
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = "white",
+     pos = 1,
+     cex = 0.18,
+     offset = 0.15,
+     labels = plot.data$CITY
+     )
+
+title(main = "APA Travel Emissions Ranking - Option 5",
+      col.main = "white")
+
+legend("bottom", legend=c("NYC 2018: 16620 Attendees", "SF 2019: 13335 Attendees"),
+       col=c("orange red", "cyan"), lty = 1, lwd = 1.2,  cex=0.5,
+       bg = "black",
+       text.col = "white")
+```
+
+```{r Plot6}
+# Plot 15 best sample coordinates to create region of confidence
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+# City Labels
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = col.text,
+     cex = 0.18,
+     pos = 3,
+     offset = 0.25,
+     labels = plot.data$CITY
+     )
+
+# NYC
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = col.nyc,
+     pch = 21,
+     adj = 1.1,
+     labels = plot.data$`NYC Delta % Increase`,
+     cex = (plot.data$`NYC 2018 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                 plot.data$`SF 2019 per Capita`)*10)
+
+# SF
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = col.sf,
+     pch = 21,
+     adj = -0.1,
+     labels = plot.data$`SF Delta % Increase`,
+     cex = (plot.data$`SF 2019 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
+                                                 plot.data$`SF 2019 per Capita`)*9)
+
+
+
+title(main = "APA Travel Emissions Ranking - Option 6",
+      col.main = "white")
+
+legend("bottom", legend=c("NYC 2018: 16620 Attendees", "SF 2019: 13335 Attendees"),
+       col=c("orange red", "cyan"), lty = 1, lwd = 1.2,  cex=0.5,
+       bg = "black",
+       text.col = "white")
+```
+
+
+```{r Plot7}
+# Plot 15 best sample coordinates to create region of confidence
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+# City Labels
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = col.text,
+     cex = 0.17,
+     pos = 3,
+     offset = 0.25,
+     labels = plot.data$CITY
+     )
+
+# NYC
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = col.nyc,
+     pch = 21,
+     adj = 1.1,
+     labels = plot.data$`NYC Delta % Increase`,
+     cex = 0.33)
+
+# SF
+text(x = plot.data$lon,
+     y = plot.data$lat,
+     col = col.sf,
+     pch = 21,
+     adj = -0.1,
+     labels = plot.data$`SF Delta % Increase`,
+     cex = 0.33)
+
+
+
+title(main = "APA Travel Emissions Ranking - Option 7",
       col.main = "white")
 
 legend("bottom", legend=c("NYC 2018: 16620 Attendees", "SF 2019: 13335 Attendees"),

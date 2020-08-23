@@ -1,4 +1,4 @@
-# GAP Climate Research
+# GAP Climate Research Overview
 
 This repository holds the analysis for quantifying avoided carbon impacts from the virtualization of the American Psychiatric Association's (APA) 2020 Annual Meeting. 
 
@@ -63,4 +63,24 @@ This difference is due to variation in the attedance base across years. Because 
 
 We see this geographic incentive in the centroid (denoted by the cross) of the above polygons. Each year's optimal region is pulled toward the conference center.
 
-Thus, in order form a robust understanding it is important to have geographically diverse conference data.
+Thus, in order to form a robust understanding it is important to have geographically diverse conference data.
+
+# Methodolgy
+
+To calculate emissions from the raw APA Annual Meeting attendance data, a variety of open data and tools have been leveraged. Below is a diagram illustrating how the raw data is geocoded and subsequenctly used to estimate travel emissions for both air and ground commutes. 
+
+![APA Methodology Diagram](/images/APA-Flow-Diagram.jpg)
+
+Two API's were vital to the analysis. Using the Google Maps API via the __{ggmap}__ package, we could easily geocode imperfect location data provided by APA meeting attendees. We then aquired a dataset of commerical airports across the globe from [partow.net](https://www.partow.net/miscellaneous/airportdatabase/) and used this locate likely airports attendees would depart from, provided there were outside a reasonable driving distance of 400 km. 
+
+Secondly, we are greatful to GoClimate for lending us access to their commercial flight emissions API. After an attendee's likely depart and arrival airports were determined, we leveraged GoClimate's robust [flight emissions methodolgy](https://www.goclimate.com/blog/wp-content/uploads/2019/04/Calculations-in-GoClimateNeutral-Flight-Footprint-API.pdf) to determine the round-trip carbon emissions per passenger.
+
+To determine carbon emissions due to ground transportation, we assumed the standard [EPA's guidlines.](https://nepis.epa.gov/Exe/ZyNET.exe/P100U8YT.TXT?ZyActionD=ZyDocument&Client=EPA&Index=2016+Thru+2020&Docs=&Query=&Time=&EndTime=&SearchMethod=1&TocRestrict=n&Toc=&TocEntry=&QField=&QFieldYear=&QFieldMonth=&QFieldDay=&IntQFieldOp=0&ExtQFieldOp=0&XmlQuery=&File=D%3A%5Czyfiles%5CIndex%20Data%5C16thru20%5CTxt%5C00000007%5CP100U8YT.txt&User=ANONYMOUS&Password=anonymous&SortMethod=h%7C-&MaximumDocuments=1&FuzzyDegree=0&ImageQuality=r75g8/r75g8/x150y150g16/i425&Display=hpfr&DefSeekPage=x&SearchBack=ZyActionL&Back=ZyActionS&BackDesc=Results%20page&MaximumPages=1&ZyEntry=1&SeekPage=x&ZyPURL) 
+
+Emissions from ground transportation arrise from two distinct segements of an attendee's potential commute.
+If an attendee is less than 400 km away from a conference destination, the the geodesic distance between the attendee's home and the conference destination is used as a proxy for the total distance driven to the conference and back. If an attendee is greater than 400 km away from a conference destination, the geodistic distance between the attendee's home and nearest commercial airport is used as a proxy for the distance driven to the nearest airport and back.
+
+It is important to note that the geodesic distance will fall short of the total driving distance, and thus we are underestimating the total emissions which arrise from driving. This is to maintain consistency with our methodolgy outlook which aims for a conservative estimate of carbon footprint. 
+
+Moreover, because we cannot pinpoint an attendee's origin location beyond the city-level, the true distance attendees will have to travel from their homes to the closest airport will vary considerably. Due to this lack of resolution we have omitted driving emissions which may arrise from any ground transport from the arrival airport to the conference center.
+
