@@ -71,7 +71,7 @@ To calculate emissions from the raw APA Annual Meeting attendance data, a variet
 
 ![APA Methodology Diagram](/images/APA-Flow-Diagram.jpg)
 
-Two API's were vital to the analysis. Using the Google Maps API via the _{ggmap}_ package, we could easily geo-code imperfect location data provided by APA attendees. We then acquired a dataset of commercial airports across the globe from [partow.net](https://www.partow.net/miscellaneous/airportdatabase/) and used this TO locate likely airports attendees would depart from, provided they are outside a reasonable driving distance to the meeting of 400 km. 
+Two API's were vital to the analysis. Using the Google Maps API via the _{ggmap}_ package, we could easily geo-code imperfect location data provided by APA attendees. We then acquired a dataset of commercial airports across the globe from [partow.net](https://www.partow.net/miscellaneous/airportdatabase/) and used this to locate airports attendees would likely depart from, provided they are outside a reasonable driving distance to the meeting of 400 km. 
 
 Secondly, we are grateful to GoClimate for lending us access to their commercial flight emissions API. After an attendee's likely departure and arrival airports were determined, we leveraged GoClimate's robust [flight emissions methodolgy](https://www.goclimate.com/blog/wp-content/uploads/2019/04/Calculations-in-GoClimateNeutral-Flight-Footprint-API.pdf) to determine the round-trip carbon emissions per passenger.
 
