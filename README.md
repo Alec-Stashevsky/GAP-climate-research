@@ -67,7 +67,7 @@ Thus, in order to form a robust understanding it is important to have geographic
 
 # Methodolgy
 
-To calculate emissions from the raw APA Annual Meeting attendance data, a variety of open data and tools have been leveraged. Below is a diagram illustrating how the raw data is geo-coded and subsequently used to estimate travel emissions for both air and ground commutes. 
+To calculate emissions from the raw APA Annual Meeting attendance data, a variety of open data and tools have been leveraged. Below is a diagram illustrating how the raw data is geo-coded and subsequently used to estimate travel emissions for both air and ground transport. 
 
 ![APA Methodology Diagram](/images/APA-Flow-Diagram.jpg)
 
