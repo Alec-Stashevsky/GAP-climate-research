@@ -4,7 +4,7 @@ This repository holds the analysis for quantifying avoided carbon impacts from t
 
 The APA is the largest psychiatric organization in the world at almost 40 thousand members. Each year approximately 15 thousand of these members attend the Annual APA Meeting held at locations across the United States and Canada.
 
-In the wake of the Coronavirus pandemic the APA canceled the 2020 annual meeting at the Pennsylvania Convention Center scheduled for April 25-29 and announced a virtual substitute, the *2020 APA On Demand online CME Product.*
+In the wake of the Coronavirus pandemic the APA canceled the 2020 Annual Meeting at the Pennsylvania Convention Center scheduled for April 25-29 and announced a virtual substitute, the *2020 APA On Demand online CME Product.*
 
 This research is currently in progress and supported by a team of psychiatrists at the think tank [Group for the Advancement of Psychiatry (GAP)](https://ourgap.org) and myself.
 

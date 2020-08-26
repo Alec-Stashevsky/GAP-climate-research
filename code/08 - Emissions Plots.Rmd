@@ -1,0 +1,143 @@
+---
+title: "08 - Emissions Plots"
+author: "Alec Stashevsky"
+date: "8/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+library(readxl)
+library(openxlsx)
+library(ggmap) # Need to cite 
+library(maps)
+library(rgeos)
+library(maptools)
+library(geosphere)
+library(viridis)
+library(gridExtra)
+library(grid)
+library(plyr)
+rm(list = ls()) # Clean R Environment
+```
+
+## Import Per Capita Emissions Analysis
+```{r Import}
+path.emissions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Analysis/APA Emissions Per Capita.xlsx"
+path.conventions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx"
+
+total <- read_excel(path.emissions, sheet = "Emissions Overview") %>% setDT()
+drivers <- read_excel(path.emissions, sheet = "Drivers Only") %>% setDT()
+plot.data <- read_excel(path.emissions, sheet = "R Plot Data") %>% setDT()
+
+conventions <- read_xlsx(path.conventions, sheet = "Convention Centers") %>%
+  setDT()
+```
+
+## Create Bar Plots
+```{r Bar Plots}
+pdf("APA Emissions Plots.pdf")
+
+# Fix Axis w/ Scientific Notation
+options(scipen=10000)
+
+# Set colors
+col.nyc <- adjustcolor("orange", alpha = 0.8)
+col.sf <- adjustcolor("cyan", alpha = 0.8)
+cols <- c(col.nyc, col.sf)
+
+# Set axis coloring
+plot.data[, axis.col := c("Actually Held", rep("NYC 2018", 13), rep("SF 2019", 12), "Actually Held", "SF 2019")]
+
+# Plot Total Emissions
+ggplot(plot.data, aes(fct_rev(fct_reorder(factor(Destination),
+                                          # Convert to Metric Tonnes
+                                          `Total CO2 Emissions (Kg)`)),
+                      `Total CO2 Emissions (Kg)`/1000, 
+                      fill = axis.col)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  xlab("Conference Destination") +
+  ylab("Metric Tonnes CO2") +
+  ggtitle("Total CO2 Emissions") +
+  guides(fill = guide_legend(title = "Attendance Base", reverse = TRUE)) +
+  scale_fill_manual(values = c("Actually Held" = "red",
+                               "NYC 2018" = col.nyc,
+                               "SF 2019" = col.sf))
+
+# Plot Per Capita Emissions
+ggplot(plot.data, aes(fct_rev(fct_reorder(factor(Destination),
+                                          # Convert to Metric Tonnes
+                                          `CO2e per Capita (Kg)`)),
+                      `CO2e per Capita (Kg)`/1000, 
+                      fill = axis.col)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  xlab("Conference Destination") +
+  ylab("Metric Tonnes CO2") +
+  ggtitle("CO2 Emissions per Capita") +
+  guides(fill = guide_legend(title = "Attendance Base", reverse = TRUE)) +
+  scale_fill_manual(values = c("Actually Held" = "red",
+                               "NYC 2018" = col.nyc,
+                               "SF 2019" = col.sf))
+
+# Delta Percentage dumbbell Plots
+ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
+                                      `Percent Delta Increase CO2`),
+                      `Percent Delta Increase CO2`*100,
+                      label = round(`Percent Delta Increase CO2`*100))) +
+  geom_hline(yintercept = 0) +
+  geom_segment(y = 0, 
+               x = plot.data$Destination,
+               yend = plot.data$`Percent Delta Increase CO2`*100,
+               xend = plot.data$Destination,
+               color = 'black',
+               size = 1) +
+  geom_point(stat = 'identity',
+             size = 6,
+             color = ifelse(plot.data$`Percent Delta Increase CO2` == 0,
+                            "red", "black")) +
+  
+  geom_text(color="white", size=2.5) +
+  facet_wrap(~`Attendance Base`) +
+  ylim(-50, 170) +
+  xlab("Conference Destination") +
+  ylab("Percentage Change from Baseline (red)") +
+  ggtitle("Change in CO2e Across Alternate APA Locations") +
+  coord_flip()
+
+# Delta Percentage dumbbell Plots (Single Plot)
+ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
+                                      `Percent Delta Increase CO2`),
+                      `Percent Delta Increase CO2`*100,
+                      label = round(`Percent Delta Increase CO2`*100))) +
+  geom_hline(yintercept = 0) +
+  geom_segment(y = 0, 
+               x = plot.data$Destination,
+               yend = plot.data$`Percent Delta Increase CO2`*100,
+               xend = plot.data$Destination,
+               color = 'gray50',
+               size = 1) +
+  geom_point(stat = 'identity',
+             size = 6,
+             color = ifelse(plot.data$`Attendance Base` == "SF 2019" &
+                              plot.data$`Percent Delta Increase CO2` != 0,
+                            col.sf,
+                            ifelse(plot.data$`Attendance Base` == "NYC 2018" &
+                                     plot.data$`Percent Delta Increase CO2` != 0,
+                                   col.nyc,
+                                   ifelse(plot.data$`Percent Delta Increase CO2` == 0,
+                                          "red", "black")))) +
+  geom_text(color="black", size=2.5) +
+  ylim(-50, 170) +
+  xlab("Conference Destination") +
+  ylab("Percentage Change from Baseline (red)") +
+  ggtitle("Change in CO2e Across Alternate APA Locations") +
+  guides(fill = guide_legend(title = "Attendance Base", reverse = TRUE)) +
+  coord_flip()
+  
+dev.off()
+```
+
