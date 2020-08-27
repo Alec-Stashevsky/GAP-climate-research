@@ -31,6 +31,8 @@ path.conventions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Cl
 total <- read_excel(path.emissions, sheet = "Emissions Overview") %>% setDT()
 drivers <- read_excel(path.emissions, sheet = "Drivers Only") %>% setDT()
 plot.data <- read_excel(path.emissions, sheet = "R Plot Data") %>% setDT()
+intl.domestic <- read_excel(path.emissions, sheet = "Domestic-International Totals",
+                            range = "A1:E57") %>% setDT()
 
 conventions <- read_xlsx(path.conventions, sheet = "Convention Centers") %>%
   setDT()
@@ -137,7 +139,62 @@ ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
   ggtitle("Change in CO2e Across Alternate APA Locations") +
   guides(fill = guide_legend(title = "Attendance Base", reverse = TRUE)) +
   coord_flip()
-  
+```
+
+## International / Domestic Breakdown
+```{r Domestic/International}
+
+# Total CO2e
+ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
+                                          `Total CO2e (Kg)`)),
+                          y = intl.domestic$`Total CO2e (Kg)`/1000,
+                          fill = `Travel Type`)) +
+  geom_col(position="stack") +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  ylab("Metric Tons CO2 Emissions") +
+  coord_flip() +
+  ggtitle("Total CO2 Emissions by Travel Type")
+
+# Emissions Share
+ggplot(intl.domestic, aes(x = fct_reorder(factor(Destination),
+                                          `Emissions Share`),
+                          y = `Emissions Share`,
+                          fill = `Travel Type`)) +
+  geom_col(position="fill") +
+  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  coord_flip() +
+  ggtitle("CO2 Emissions Share by Travel Type") +
+  scale_y_continuous(labels = scales::percent)
+
+# Per Capita
+
+## Get Counts for Dom and Intl
+nyc.dom <- 11470
+nyc.intl <- 16620 - nyc.dom
+sf.dom <- 10053
+sf.intl <- 13335 - sf.dom
+
+# Build per Capita vector
+attendance.vec <- c(rep(nyc.dom, 14), rep(sf.dom, 14), rep(nyc.intl, 14),
+                    rep(sf.intl, 14))
+
+# Add per Capita
+intl.domestic[, `CO2e per Capita (Kg)` := `Total CO2e (Kg)`/attendance.vec]
+
+ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
+                                          `CO2e per Capita (Kg)`)),
+                          y = `CO2e per Capita (Kg)`/ 1000,
+                          fill = `Travel Type`)) +
+  geom_col(position="stack") +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  ylab("Metric Tons CO2") +
+  coord_flip() +
+  ggtitle("CO2 Emissions per Capita by Travel Type")
+
 dev.off()
 ```
 
