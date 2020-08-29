@@ -124,7 +124,7 @@ write.xlsx(meeting.rank,
 # Initialize write to pdf
 pdf(file = "APA Historical Meeting Locations Rank.pdf")
 
-# Plot 15 best sample coordinates to create region of confidence
+# Plot all attendance bases
 map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
      xlim = c(-180, -44),
      ylim = c(10, 50))
@@ -157,6 +157,36 @@ legend("bottom", legend=c("NYC 2018", "SF 2019", "PHL 2020 (Pre-cancellation)"),
        col=c("orange red", "cyan", "purple"), lty = 1, lwd = 1.2,  cex=0.5,
        bg = "black",
        text.col = "white")
+
+
+# Plot NYC and SF attendance bases
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1,
+     xlim = c(-180, -44),
+     ylim = c(10, 50))
+
+text(x = meeting.rank.nyc$lon,
+     y = meeting.rank.nyc$lat,
+     # pos = 1,
+     labels = meeting.rank.nyc$rank,
+     col = "orange red", cex = 0.5)
+
+text(x = meeting.rank.sf$lon,
+     y = meeting.rank.sf$lat,
+     pos = 1,
+     offset = 0.3,
+     labels = meeting.rank.sf$rank,
+     col = "cyan", cex = 0.5)
+
+# Add plot aesthetics
+title(main = "APA Historical Meeting Travel Emissions Ranking",
+      col.main = "white")
+
+legend("bottom", legend=c("NYC 2018", "SF 2019"),
+       col=c("orange red", "cyan"), lty = 1, lwd = 1.2,  cex=0.5,
+       bg = "black",
+       text.col = "white")
+
+
 
 dev.off()
 ```

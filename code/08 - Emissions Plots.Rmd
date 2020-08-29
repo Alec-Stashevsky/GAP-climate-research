@@ -29,7 +29,7 @@ path.emissions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Clim
 path.conventions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx"
 
 total <- read_excel(path.emissions, sheet = "Emissions Overview") %>% setDT()
-drivers <- read_excel(path.emissions, sheet = "Drivers Only") %>% setDT()
+drivers <- read_excel(path.emissions, sheet = "Drivers") %>% setDT()
 plot.data <- read_excel(path.emissions, sheet = "R Plot Data") %>% setDT()
 intl.domestic <- read_excel(path.emissions, sheet = "Domestic-International Totals",
                             range = "A1:E57") %>% setDT()
@@ -147,18 +147,48 @@ ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
 # Total CO2e
 ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
                                           `Total CO2e (Kg)`)),
-                          y = intl.domestic$`Total CO2e (Kg)`/1000,
+                          y = `Total CO2e (Kg)`/1000,
                           fill = `Travel Type`)) +
   geom_col(position="stack") +
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
-  ylab("Metric Tons CO2 Emissions") +
+  ylab("Metric Tons CO2") +
   coord_flip() +
-  ggtitle("Total CO2 Emissions by Travel Type")
+  ggtitle("Total Emissions")
 
+
+# Total CO2e NYC
+ggplot(intl.domestic[`Attendance Base` == "NYC 2018"],
+       aes(x = fct_rev(fct_reorder(factor(Destination),
+                                   `Total CO2e (Kg)`)),
+           y = `Total CO2e (Kg)`/1000,
+           fill = `Travel Type`)) +
+  
+  geom_col(position="stack") +
+  xlab("Conference Destination") +
+  ylab("Metric Tons CO2") +
+  coord_flip() +
+  ggtitle("Total Emissions for NYC 2018")
+
+# Total CO2e SF
+ggplot(intl.domestic[`Attendance Base` == "SF 2019"], aes(x = fct_rev(fct_reorder(factor(Destination),
+                                          `Total CO2e (Kg)`)),
+                          y = `Total CO2e (Kg)`/1000,
+                          fill = `Travel Type`)) +
+  geom_col(position="stack") +
+  xlab("Conference Destination") +
+  ylab("Metric Tons CO2") +
+  ylim(c(0, 50000)) + # Match NYC Axis
+  coord_flip() +
+  ggtitle("Total CO2 Emissions for SF 2019")
+
+```
+
+
+```{r Emissions Share}
 # Emissions Share
-ggplot(intl.domestic, aes(x = fct_reorder(factor(Destination),
-                                          `Emissions Share`),
+ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
+                                          `Total CO2e (Kg)`)),
                           y = `Emissions Share`,
                           fill = `Travel Type`)) +
   geom_col(position="fill") +
@@ -166,7 +196,7 @@ ggplot(intl.domestic, aes(x = fct_reorder(factor(Destination),
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   coord_flip() +
-  ggtitle("CO2 Emissions Share by Travel Type") +
+  ggtitle("CO2 Emissions Share") +
   scale_y_continuous(labels = scales::percent)
 
 # Per Capita
@@ -193,7 +223,94 @@ ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
   xlab("Conference Destination") +
   ylab("Metric Tons CO2") +
   coord_flip() +
-  ggtitle("CO2 Emissions per Capita by Travel Type")
+  ggtitle("CO2 Emissions per Capita")
+
+```
+
+
+## Transport Mode Plots 
+```{r Transport Modes}
+# Add driver counts into intl.domestic data
+drive.count.plots <- intl.domestic[drivers[`Transport Mode` == "Drive"],
+                                   on = c("Destination", "Attendance Base")]
+
+# Keep only domestic counts
+drive.count.plots[`Travel Type` == "International"]$Count <- NA
+
+# Emissions Ranking
+nyc.e.ranking <- c("New York City",
+                   "Philadelphia",
+                   "Washington DC",
+                   "Toronto",
+                   "Montreal",
+                   "Chicago",
+                   "Atlanta",
+                   "New Orleans",
+                   "Dallas",
+                   "Miami",
+                   "Los Angeles",
+                   "San Diego",
+                   "San Francisco",
+                   "Honolulu")
+
+sf.e.ranking <- c("Washington DC",
+                   "Philadelphia",
+                   "Chicago",
+                   "New York City",
+                   "Toronto",
+                   "Atlanta",
+                   "Montreal",
+                   "Dallas",
+                   "New Orleans",
+                   "Miami",
+                   "Los Angeles",
+                   "San Diego",
+                   "San Francisco",
+                   "Honolulu")
+
+# Total CO2e (Both)
+ggplot(drivers, 
+       aes(x = fct_rev(factor(Destination,
+                      levels = nyc.e.ranking)), # Force Ordering for NYC
+           y = `Emissions Share`,
+           fill = `Transport Mode`)) +
+  geom_col(position="stack") +
+  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  coord_flip() +
+  ggtitle("CO2 Emissions SF 2019 by Transport Mode") +
+  scale_y_continuous(labels = scales::percent)
+
+
+# Total CO2e NYC
+ggplot(drivers[`Attendance Base` == "NYC 2018"], 
+       aes(x = fct_rev(factor(Destination,
+                      levels = nyc.e.ranking)),
+           y = `Emissions Share`,
+           fill = `Transport Mode`)) +
+  geom_col(position="stack") +
+  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  coord_flip() +
+  ggtitle("CO2 Emissions NYC 2018 by Transport Mode") +
+  scale_y_continuous(labels = scales::percent)
+
+# Total CO2e SF
+ggplot(drivers[`Attendance Base` == "SF 2019"], 
+       aes(x = fct_rev(factor(Destination,
+                      levels = sf.e.ranking)),
+           y = `Emissions Share`,
+           fill = `Transport Mode`)) +
+  geom_col(position="stack") +
+  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  coord_flip() +
+  ggtitle("CO2 Emissions SF 2019 by Transport Mode") +
+  scale_y_continuous(labels = scales::percent)
+
 
 dev.off()
 ```

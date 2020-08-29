@@ -178,8 +178,7 @@ text(x = plot.data$lon,
      y = plot.data$lat,
      col = "white",
      pos = 1,
-     cex = (plot.data$`SF 2019 per Capita`)/sum(plot.data$`NYC 2018 per Capita`,
-                                      plot.data$`SF 2019 per Capita`)*15,
+     cex = 0.18,
      offset = -0.10,
      labels = plot.data$CITY
      )
