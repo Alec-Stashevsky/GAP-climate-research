@@ -275,7 +275,7 @@ ggplot(drivers,
            y = `Emissions Share`,
            fill = `Transport Mode`)) +
   geom_col(position="stack") +
-  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  #geom_hline(yintercept = 0.5, lwd = 0.5) +
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   coord_flip() +
@@ -290,7 +290,7 @@ ggplot(drivers[`Attendance Base` == "NYC 2018"],
            y = `Emissions Share`,
            fill = `Transport Mode`)) +
   geom_col(position="stack") +
-  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  #geom_hline(yintercept = 0.5, lwd = 0.5) +
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   coord_flip() +
@@ -304,14 +304,61 @@ ggplot(drivers[`Attendance Base` == "SF 2019"],
            y = `Emissions Share`,
            fill = `Transport Mode`)) +
   geom_col(position="stack") +
-  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  #geom_hline(yintercept = 0.5, lwd = 0.5) +
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   coord_flip() +
   ggtitle("CO2 Emissions SF 2019 by Transport Mode") +
   scale_y_continuous(labels = scales::percent)
+```
 
+```{r Transport Mode Attendance Share}
 
+# Total CO2e (Both)
+ggplot(drivers, 
+       aes(x = fct_rev(factor(Destination,
+                      levels = nyc.e.ranking)), # Force Ordering for NYC
+           y = `Attendance Share`,
+           fill = `Transport Mode`)) +
+  geom_col(position="stack") +
+  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  coord_flip() +
+  ggtitle("Conference Attendance") +
+  scale_y_continuous(labels = scales::percent)
+
+# Total CO2e NYC
+ggplot(drivers[`Attendance Base` == "NYC 2018"], 
+       aes(x = fct_rev(factor(Destination,
+                      levels = nyc.e.ranking)),
+           y = `Attendance Share`,
+           fill = `Transport Mode`)) +
+  geom_col(position="stack") +
+ # geom_hline(yintercept = 0.5, lwd = 0.5) +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  coord_flip() +
+  ggtitle("NYC 2018 Conference Attendance") +
+  scale_y_continuous(labels = scales::percent)
+
+# Total CO2e SF
+ggplot(drivers[`Attendance Base` == "SF 2019"], 
+       aes(x = fct_rev(factor(Destination,
+                      levels = sf.e.ranking)),
+           y = `Attendance Share`,
+           fill = `Transport Mode`)) +
+  geom_col(position="stack") +
+ # geom_hline(yintercept = 0.5, lwd = 0.5) +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  coord_flip() +
+  ggtitle("SF 2019 Conference Attendance") +
+  scale_y_continuous(labels = scales::percent)
+
+```
+
+```{r Export Plots}
 dev.off()
 ```
 
