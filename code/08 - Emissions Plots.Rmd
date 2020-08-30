@@ -218,7 +218,7 @@ ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
                                           `CO2e per Capita (Kg)`)),
                           y = `CO2e per Capita (Kg)`/ 1000,
                           fill = `Travel Type`)) +
-  geom_col(position="stack") +
+  geom_col(position = position_dodge2(reverse = TRUE)) +
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   ylab("Metric Tons CO2") +
