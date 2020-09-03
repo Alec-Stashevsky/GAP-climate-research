@@ -1,0 +1,186 @@
+---
+title: "09 - Misc Presntation Graphics"
+author: "Alec Stashevsky"
+date: "9/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(digits = 10) # need at least 8 decimal places for coordinates
+library(readxl)
+library(openxlsx)
+library(tidyverse)
+library(data.table)
+library(geosphere)
+library(ggmap) # Need to cite 
+library(maps)
+library(rgeos)
+library(maptools)
+library(sp)
+rm(list = ls()) # Clean R Environment
+```
+
+## Import Geodistance Data
+```{r Import}
+path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
+
+nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
+  setDT()
+```
+
+
+## Plot Driving Route Example
+
+```{r NYC Drivers Plot}
+# Filter to only NYC drivers
+nyc.drivers <- nyc[drive.JFK == 1]
+
+# Create Javitz center coordinate vector
+nyc.dest <- as.numeric(conventions[STATE =="NY", c('lon', 'lat')])
+
+# Initialize write to pdf
+pdf(file = "APA Presentation Graphics.pdf")
+
+# Plot a map of the united states:
+map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Add a point on the map for each airport:
+# Lets add the cex value later*************************************
+points(x=nyc.drivers$lon,
+       y=nyc.drivers$lat,
+       pch=19, cex = log(nyc.drivers$Frequency)/50,
+       col = rgb(red = 1, green = .69, blue = 0, alpha = 0.3))
+# Parameterize color of lines
+col.1 <- adjustcolor("orange red", alpha=0.18)
+col.2 <- adjustcolor("orange", alpha=0.3)
+edge.pal <- colorRampPalette(c(col.1, col.2), alpha = TRUE)
+edge.col <- edge.pal(100)
+
+# Calculate 1000 intermediate points on Great Circle between origin/destination
+## We need to build a for loop and get intermediate points by individual trip
+for (i in 1:nrow(nyc.drivers)){
+  routes = gcIntermediate(c(nyc.drivers[i, ]$lon,
+                            nyc.drivers[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.drivers[i,]$Frequency / max(nyc.drivers$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+```
+
+```{r SF Drivers Plot}
+# Filter to only NYC drivers
+sf.drivers <- sf[drive.SFO == 1]
+
+# Create Javitz center coordinate vector
+sf.dest <- as.numeric(conventions[CITY =="San Francisco", c('lon', 'lat')])
+
+# Parameterize color of lines
+col.1 <- adjustcolor("dodgerblue2", alpha=0.2)
+col.2 <- adjustcolor("cyan", alpha=0.18)
+edge.pal <- colorRampPalette(c(col.1, col.2), alpha = TRUE)
+edge.col <- edge.pal(100)
+
+# Plot a map of the united states:
+map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Add a point on the map for each airport:
+# Lets add the cex value later*************************************
+points(x=sf.drivers$lon,
+       y=sf.drivers$lat,
+       pch=19, cex = log(sf.drivers$Frequency)/50,
+       col = rgb(red = 26/255, green = 1, blue = 171/255, alpha = 0.2))
+
+# Calculate 1000 intermediate points on Great Circle between origin/destination
+## We need to build a for loop and get intermediate points by individual trip
+for (i in 1:nrow(sf.drivers)){
+  routes = gcIntermediate(c(sf.drivers[i, ]$lon,
+                            sf.drivers[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*sf.drivers[i,]$Frequency / max(sf.drivers$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+```
+
+```{r Combined Drivers Plot}
+# Filter to only NYC drivers
+sf.drivers <- sf[drive.SFO == 1]
+
+# Create Javitz center coordinate vector
+sf.dest <- as.numeric(conventions[CITY =="San Francisco", c('lon', 'lat')])
+
+# Parameterize color of lines
+col.1 <- adjustcolor("dodgerblue2", alpha=0.2)
+col.2 <- adjustcolor("cyan", alpha=0.18)
+edge.pal <- colorRampPalette(c(col.1, col.2), alpha = TRUE)
+edge.col <- edge.pal(100)
+
+# Plot a map of the united states:
+map("state", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Add a point on the map for each airport:
+# Lets add the cex value later*************************************
+points(x=sf.drivers$lon,
+       y=sf.drivers$lat,
+       pch=19, cex = log(sf.drivers$Frequency)/50,
+       col = rgb(red = 26/255, green = 1, blue = 171/255, alpha = 0.2))
+
+# Calculate 1000 intermediate points on Great Circle between origin/destination
+## We need to build a for loop and get intermediate points by individual trip
+for (i in 1:nrow(sf.drivers)){
+  routes = gcIntermediate(c(sf.drivers[i, ]$lon,
+                            sf.drivers[i, ]$lat),
+                          sf.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*sf.drivers[i,]$Frequency / max(sf.drivers$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+points(x=nyc.drivers$lon,
+       y=nyc.drivers$lat,
+       pch=19, cex = log(nyc.drivers$Frequency)/50,
+       col = rgb(red = 1, green = .69, blue = 0, alpha = 0.3))
+# Parameterize color of lines
+col.1 <- adjustcolor("orange red", alpha=0.18)
+col.2 <- adjustcolor("orange", alpha=0.3)
+edge.pal <- colorRampPalette(c(col.1, col.2), alpha = TRUE)
+edge.col <- edge.pal(100)
+
+# Calculate 1000 intermediate points on Great Circle between origin/destination
+## We need to build a for loop and get intermediate points by individual trip
+for (i in 1:nrow(nyc.drivers)){
+  routes = gcIntermediate(c(nyc.drivers[i, ]$lon,
+                            nyc.drivers[i, ]$lat),
+                          nyc.dest,
+                          1000,
+                          addStartEnd = TRUE,
+                          breakAtDateLine = TRUE,
+                          sp = TRUE)
+    
+    edge.ind <- round(500*nyc.drivers[i,]$Frequency / max(nyc.drivers$Frequency))
+    
+    lines(routes, col=edge.col[edge.ind], lwd=edge.ind/30)
+}
+
+dev.off()
+```
