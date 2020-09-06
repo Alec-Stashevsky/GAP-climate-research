@@ -32,7 +32,7 @@ total <- read_excel(path.emissions, sheet = "Emissions Overview") %>% setDT()
 drivers <- read_excel(path.emissions, sheet = "Drivers") %>% setDT()
 plot.data <- read_excel(path.emissions, sheet = "R Plot Data") %>% setDT()
 intl.domestic <- read_excel(path.emissions, sheet = "Domestic-International Totals",
-                            range = "A1:E57") %>% setDT()
+                            range = "A1:F57") %>% setDT()
 
 conventions <- read_xlsx(path.conventions, sheet = "Convention Centers") %>%
   setDT()
@@ -88,12 +88,12 @@ ggplot(plot.data, aes(fct_rev(fct_reorder(factor(Destination),
 # Delta Percentage dumbbell Plots
 ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
                                       `Percent Delta Increase CO2`),
-                      `Percent Delta Increase CO2`*100,
+                      y = `Percent Delta Increase CO2`,
                       label = round(`Percent Delta Increase CO2`*100))) +
   geom_hline(yintercept = 0) +
   geom_segment(y = 0, 
                x = plot.data$Destination,
-               yend = plot.data$`Percent Delta Increase CO2`*100,
+               yend = plot.data$`Percent Delta Increase CO2`,
                xend = plot.data$Destination,
                color = 'black',
                size = 1) +
@@ -104,9 +104,10 @@ ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
   
   geom_text(color="white", size=2.5) +
   facet_wrap(~`Attendance Base`) +
-  ylim(-50, 170) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 5L), limits = c(-0.5, 1.7)) +
+  #ylim(-50, 170) +
   xlab("Conference Destination") +
-  ylab("Percentage Change from Baseline (red)") +
+  ylab("Change from Baseline (red)") +
   ggtitle("Change in CO2e Across Alternate APA Locations") +
   coord_flip()
 
@@ -199,24 +200,11 @@ ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
   ggtitle("CO2 Emissions Share") +
   scale_y_continuous(labels = scales::percent)
 
+
 # Per Capita
-
-## Get Counts for Dom and Intl
-nyc.dom <- 11470
-nyc.intl <- 16620 - nyc.dom
-sf.dom <- 10053
-sf.intl <- 13335 - sf.dom
-
-# Build per Capita vector
-attendance.vec <- c(rep(nyc.dom, 14), rep(sf.dom, 14), rep(nyc.intl, 14),
-                    rep(sf.intl, 14))
-
-# Add per Capita
-intl.domestic[, `CO2e per Capita (Kg)` := `Total CO2e (Kg)`/attendance.vec]
-
 ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
-                                          `CO2e per Capita (Kg)`)),
-                          y = `CO2e per Capita (Kg)`/ 1000,
+                                          `Per Capita CO2e (Kg)`)),
+                          y = `Per Capita CO2e (Kg)`/ 1000,
                           fill = `Travel Type`)) +
   geom_col(position = position_dodge2(reverse = TRUE)) +
   facet_wrap(~`Attendance Base`) +
