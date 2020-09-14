@@ -97,7 +97,7 @@ ggplot(plot.data, aes(fct_rev(fct_reorder(factor(Destination),
   coord_flip() +
   xlab("Conference Destination") +
   ylab("Metric Tonnes CO2") +
-  ggtitle("CO2 Emissions per Capita") +
+  ggtitle("Emissions per Capita") +
   guides(fill = guide_legend(title = "Attendance Base", reverse = TRUE)) +
   scale_fill_manual(values = c("Actually Held" = "red",
                                "NYC 2018" = col.nyc,
@@ -258,7 +258,7 @@ ggplot(intl.domestic, aes(x = fct_rev(Destination),
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   coord_flip() +
-  ggtitle("CO2 Emissions Share") +
+  ggtitle("Share of Total CO2e") +
   scale_y_continuous(labels = scales::percent) +
   scale_fill_brewer(palette = "Pastel2") +
   labs(fill="Origin Location")
@@ -348,7 +348,7 @@ ggplot(drivers,
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   coord_flip() +
-  ggtitle("CO2 Emissions Share") +
+  ggtitle("Share of Total CO2e") +
   scale_y_continuous(labels = scales::percent) +
   scale_fill_brewer(palette = "Accent")
   
