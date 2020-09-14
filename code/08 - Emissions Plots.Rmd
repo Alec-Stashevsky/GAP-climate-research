@@ -20,6 +20,7 @@ library(viridis)
 library(gridExtra)
 library(grid)
 library(plyr)
+library(scales)
 rm(list = ls()) # Clean R Environment
 ```
 
@@ -52,6 +53,23 @@ cols <- c(col.nyc, col.sf)
 
 # Set axis coloring
 plot.data[, axis.col := c("Actually Held", rep("NYC 2018", 13), rep("SF 2019", 12), "Actually Held", "SF 2019")]
+
+# Create Factor levels for consistent axis
+plot.data$Destination <- factor(plot.data$Destination, levels = c("New York City",
+                                                                  "Philadelphia",
+                                                                  "Washington DC",
+                                                                  "Toronto",
+                                                                  "Montreal",
+                                                                  "Chicago",
+                                                                  "Atlanta",
+                                                                  "New Orleans",
+                                                                  "Dallas",
+                                                                  "Miami",
+                                                                  "Los Angeles",
+                                                                  "San Diego",
+                                                                  "San Francisco",
+                                                                  "Honolulu")
+                                )
 
 # Plot Total Emissions
 ggplot(plot.data, aes(fct_rev(fct_reorder(factor(Destination),
@@ -86,8 +104,7 @@ ggplot(plot.data, aes(fct_rev(fct_reorder(factor(Destination),
                                "SF 2019" = col.sf))
 
 # Delta Percentage dumbbell Plots
-ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
-                                      `Percent Delta Increase CO2`),
+ggplot(plot.data, aes(x = fct_rev(Destination),
                       y = `Percent Delta Increase CO2`,
                       label = round(`Percent Delta Increase CO2`*100))) +
   geom_hline(yintercept = 0) +
@@ -112,8 +129,7 @@ ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
   coord_flip()
 
 # Delta Percentage dumbbell Plots (Single Plot)
-ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
-                                      `Percent Delta Increase CO2`),
+ggplot(plot.data, aes(x = fct_rev(Destination),
                       `Percent Delta Increase CO2`*100,
                       label = round(`Percent Delta Increase CO2`*100))) +
   geom_hline(yintercept = 0) +
@@ -144,18 +160,61 @@ ggplot(plot.data, aes(x = fct_reorder(factor(Destination),
 
 ## International / Domestic Breakdown
 ```{r Domestic/International}
+# Create Factor levels for consistent axis
+intl.domestic$Destination <- factor(intl.domestic$Destination,
+                                    levels = c("New York City",
+                                               "Philadelphia",
+                                               "Washington DC",
+                                               "Toronto",
+                                               "Montreal",
+                                               "Chicago",
+                                               "Atlanta",
+                                               "New Orleans",
+                                               "Dallas",
+                                               "Miami",
+                                               "Los Angeles",
+                                               "San Diego",
+                                               "San Francisco",
+                                               "Honolulu")
+                                    )
 
-# Total CO2e
-ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
-                                          `Total CO2e (Kg)`)),
-                          y = `Total CO2e (Kg)`/1000,
-                          fill = `Travel Type`)) +
+
+# Total CO2e - No Grouping
+ggplot(intl.domestic, aes(x = fct_rev(Destination),
+                          y = `Total CO2e (Kg)`/1000)) +
   geom_col(position="stack") +
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   ylab("Metric Tons CO2") +
+  scale_y_continuous(labels = comma) +
   coord_flip() +
   ggtitle("Total Emissions")
+
+
+# Change Intl Emissions Shares to Null for Plot labels
+intl.domestic.total.e <- intl.domestic
+intl.domestic.total.e[`Travel Type` == "International"]$`Emissions Share` <- NA
+
+# Total CO2e
+ggplot(intl.domestic.total.e, aes(x = fct_rev(Destination),
+                          y = `Total CO2e (Kg)`/1000,
+                          fill = `Travel Type`,
+                          label = `Emissions Share`)) +
+  
+  geom_col(position="stack") +
+  geom_text(aes(label = percent(`Emissions Share`, accuracy = 5L)),
+            size = 2.8,
+            position = position_stack(vjust = 0.5)) +
+  
+  facet_wrap(~`Attendance Base`) +
+  xlab("Conference Destination") +
+  ylab("Metric Tons CO2") +
+  scale_y_continuous(labels = comma, n.breaks = 4) +
+  coord_flip() +
+  ggtitle("Total Emissions") +
+  scale_fill_brewer(palette = "Pastel2") +
+  labs(fill="Origin Location")
+  
 
 
 # Total CO2e NYC
@@ -169,7 +228,9 @@ ggplot(intl.domestic[`Attendance Base` == "NYC 2018"],
   xlab("Conference Destination") +
   ylab("Metric Tons CO2") +
   coord_flip() +
-  ggtitle("Total Emissions for NYC 2018")
+  ggtitle("Total Emissions for NYC 2018") +
+  scale_fill_brewer(palette = "Pastel2") +
+  labs(fill="Origin Location")
 
 # Total CO2e SF
 ggplot(intl.domestic[`Attendance Base` == "SF 2019"], aes(x = fct_rev(fct_reorder(factor(Destination),
@@ -181,15 +242,15 @@ ggplot(intl.domestic[`Attendance Base` == "SF 2019"], aes(x = fct_rev(fct_reorde
   ylab("Metric Tons CO2") +
   ylim(c(0, 50000)) + # Match NYC Axis
   coord_flip() +
-  ggtitle("Total CO2 Emissions for SF 2019")
-
+  ggtitle("Total CO2 Emissions for SF 2019") +
+  scale_fill_brewer(palette = "Pastel2") +
+  labs(fill="Origin Location")
 ```
 
 
 ```{r Emissions Share}
 # Emissions Share
-ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
-                                          `Total CO2e (Kg)`)),
+ggplot(intl.domestic, aes(x = fct_rev(Destination),
                           y = `Emissions Share`,
                           fill = `Travel Type`)) +
   geom_col(position="fill") +
@@ -198,12 +259,13 @@ ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
   xlab("Conference Destination") +
   coord_flip() +
   ggtitle("CO2 Emissions Share") +
-  scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Pastel2") +
+  labs(fill="Origin Location")
 
 
 # Per Capita
-ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
-                                          `Per Capita CO2e (Kg)`)),
+ggplot(intl.domestic, aes(x = fct_rev(Destination),
                           y = `Per Capita CO2e (Kg)`/ 1000,
                           fill = `Travel Type`)) +
   geom_col(position = position_dodge2(reverse = TRUE)) +
@@ -211,7 +273,9 @@ ggplot(intl.domestic, aes(x = fct_rev(fct_reorder(factor(Destination),
   xlab("Conference Destination") +
   ylab("Metric Tons CO2") +
   coord_flip() +
-  ggtitle("CO2 Emissions per Capita")
+  ggtitle("CO2 Emissions per Capita") +
+  scale_fill_brewer(palette = "Pastel2") +
+  labs(fill="Origin Location")
 
 ```
 
@@ -225,7 +289,25 @@ drive.count.plots <- intl.domestic[drivers[`Transport Mode` == "Drive"],
 # Keep only domestic counts
 drive.count.plots[`Travel Type` == "International"]$Count <- NA
 
-# Emissions Ranking
+drivers$Destination <- factor(drivers$Destination, levels = c("New York City",
+                                                                  "Philadelphia",
+                                                                  "Washington DC",
+                                                                  "Toronto",
+                                                                  "Montreal",
+                                                                  "Chicago",
+                                                                  "Atlanta",
+                                                                  "New Orleans",
+                                                                  "Dallas",
+                                                                  "Miami",
+                                                                  "Los Angeles",
+                                                                  "San Diego",
+                                                                  "San Francisco",
+                                                                  "Honolulu")
+                                )
+
+
+
+# Emissions Ranking - Kepp w/ consistent factor levels above
 nyc.e.ranking <- c("New York City",
                    "Philadelphia",
                    "Washington DC",
@@ -258,8 +340,7 @@ sf.e.ranking <- c("Washington DC",
 
 # Total CO2e (Both)
 ggplot(drivers, 
-       aes(x = fct_rev(factor(Destination,
-                      levels = nyc.e.ranking)), # Force Ordering for NYC
+       aes(x = fct_rev(Destination), # Force Ordering for NYC
            y = `Emissions Share`,
            fill = `Transport Mode`)) +
   geom_col(position="stack") +
@@ -267,8 +348,10 @@ ggplot(drivers,
   facet_wrap(~`Attendance Base`) +
   xlab("Conference Destination") +
   coord_flip() +
-  ggtitle("CO2 Emissions SF 2019 by Transport Mode") +
-  scale_y_continuous(labels = scales::percent)
+  ggtitle("CO2 Emissions Share") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Accent")
+  
 
 
 # Total CO2e NYC
@@ -283,7 +366,8 @@ ggplot(drivers[`Attendance Base` == "NYC 2018"],
   xlab("Conference Destination") +
   coord_flip() +
   ggtitle("CO2 Emissions NYC 2018 by Transport Mode") +
-  scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Accent")
 
 # Total CO2e SF
 ggplot(drivers[`Attendance Base` == "SF 2019"], 
@@ -297,15 +381,15 @@ ggplot(drivers[`Attendance Base` == "SF 2019"],
   xlab("Conference Destination") +
   coord_flip() +
   ggtitle("CO2 Emissions SF 2019 by Transport Mode") +
-  scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Accent")
 ```
 
 ```{r Transport Mode Attendance Share}
 
 # Total CO2e (Both)
 ggplot(drivers, 
-       aes(x = fct_rev(factor(Destination,
-                      levels = nyc.e.ranking)), # Force Ordering for NYC
+       aes(x = fct_rev(Destination), # Force Ordering for NYC
            y = `Attendance Share`,
            fill = `Transport Mode`)) +
   geom_col(position="stack") +
@@ -314,7 +398,8 @@ ggplot(drivers,
   xlab("Conference Destination") +
   coord_flip() +
   ggtitle("Conference Attendance") +
-  scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Accent")
 
 # Total CO2e NYC
 ggplot(drivers[`Attendance Base` == "NYC 2018"], 
@@ -328,7 +413,8 @@ ggplot(drivers[`Attendance Base` == "NYC 2018"],
   xlab("Conference Destination") +
   coord_flip() +
   ggtitle("NYC 2018 Conference Attendance") +
-  scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Accent")
 
 # Total CO2e SF
 ggplot(drivers[`Attendance Base` == "SF 2019"], 
@@ -342,8 +428,8 @@ ggplot(drivers[`Attendance Base` == "SF 2019"],
   xlab("Conference Destination") +
   coord_flip() +
   ggtitle("SF 2019 Conference Attendance") +
-  scale_y_continuous(labels = scales::percent)
-
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Accent")
 ```
 
 ```{r Export Plots}
