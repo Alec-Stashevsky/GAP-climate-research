@@ -22,7 +22,7 @@ rm(list = ls()) # Clean R Environment
 
 ## Import Geocoded APA Attendence Data
 ```{r Import}
-path.in <-"C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx"
+path.in <-"C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA GeoData.xlsx"
 
 nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
@@ -813,5 +813,5 @@ origin.sets <- list("NYC 2018" = nyc.origin,
                  "PHL 2020" = phl.origin)
 
 write.xlsx(origin.sets,
-           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx")
 ```

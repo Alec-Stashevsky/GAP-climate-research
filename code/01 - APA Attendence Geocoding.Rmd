@@ -27,7 +27,7 @@ rm(list = ls()) # Clean R Environment
 
 ```{r Import}
 # Import the Attendance data
-path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Data/Registrant Locations 2018-2020.xlsx"
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Data/Registrant Locations 2018-2020.xlsx"
 
 nyc.2018.raw <- read_excel(path.in, sheet = "2018 NYC") %>% setDT()
 sf.2019.raw <- read_excel(path.in, sheet = "2019 SF") %>% setDT()
@@ -155,13 +155,13 @@ phl.geo[is.na(lat) | is.na(lon)]
 
 ```{r Convention Centers}
 # Import list of convention centers
-convention.import <- read_excel("C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/Convention Centers.xlsx", range = "A1:E15")
+convention.import <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Convention Centers.xlsx", range = "A1:E15")
 
 # Geocode conventions centers
 conventions.geo <- mutate_geocode(convention.import, location = location)
 
 # Export 
-write.xlsx(conventions.geo, "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx")
+write.xlsx(conventions.geo, "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx")
 ```
 
 ```{r Final Write}
@@ -171,5 +171,5 @@ geo.sets <- list("NYC 2018" = nyc.geo,
                  "Convention Centers" = conventions.geo)
 
 write.xlsx(geo.sets,
-           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA GeoData.xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA GeoData.xlsx")
 ```

@@ -18,7 +18,7 @@ rm(list = ls()) # Clean R Environment
 
 ## Import APA Geodistance Data
 ```{r APA Import}
-path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
 
 nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
@@ -30,7 +30,7 @@ conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
 
 ## Import Global Airport Database 
 ```{r Airports Import}
-path.airports <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GlobalAirportDatabase/GlobalAirportDatabase.txt"
+path.airports <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GlobalAirportDatabase/GlobalAirportDatabase.txt"
 
 # Import that data
 airports.raw <- read.delim(path.airports, header = FALSE, sep = ":") %>% setDT()
@@ -69,7 +69,7 @@ The airport data is assigning very small airports in about 5% of cases. The GoCl
 
 ```{r Clean Airports}
 # Import the misqueries from first API run
-path.misqueries <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/GoClimate API Misqueries.xlsx"
+path.misqueries <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/GoClimate API Misqueries.xlsx"
 
 misqueries <- read_excel(path.misqueries, sheet = "Misqueries") %>% setDT()
 
@@ -170,5 +170,5 @@ final.sets <- list("NYC 2018" = nyc.final,
                  "Convention Centers" = conventions.airports)
 
 write.xlsx(final.sets,
-           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance + Airport Data.xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geodistance + Airport Data.xlsx")
 ```

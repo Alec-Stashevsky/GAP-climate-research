@@ -20,7 +20,7 @@ rm(list = ls()) # Clean R Environment
 
 ## Import APA Meeting Locations
 ```{r Import}
-path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Data/APA Meeting Locations Timeline.xlsx"
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Data/APA Meeting Locations Timeline.xlsx"
 
 meetings <- read_excel(path.in, sheet = "Unique Locations") %>% setDT()
 
@@ -29,7 +29,7 @@ meetings <- read_excel(path.in, sheet = "Unique Locations") %>% setDT()
 
 ## Import Geodistance Data from 03
 ```{r Import}
-path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
 
 nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
@@ -115,7 +115,7 @@ meeting.rank <- meeting.rank.nyc[meeting.rank.sf, on = "Location"][
                                                            ][,-c(5,6,8,9)]
 
 write.xlsx(meeting.rank,
-           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Historical Meetings Rankings.xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Historical Meetings Rankings.xlsx")
 ```
 
 

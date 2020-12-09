@@ -18,9 +18,9 @@ rm(list = ls()) # Clean R Environment
 
 ## Import Geo-unique Data
 ```{r Import}
-path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx"
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geo-Unqiue Frequency Data.xlsx"
 
-path.convention <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx"
+path.convention <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx"
 
 nyc.raw <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf.raw <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
@@ -315,5 +315,5 @@ final.sets <- list("NYC 2018" = final.nyc,
                  "Summary Statistics" = total.table)
 
 write.xlsx(final.sets,
-           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geodistance Data.xlsx")
 ```

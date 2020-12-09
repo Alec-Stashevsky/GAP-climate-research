@@ -25,8 +25,9 @@ rm(list = ls()) # Clean R Environment
 
 ## Import Per Capita Emissions Analysis
 ```{r Import}
-path.emissions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Analysis/APA Emissions Per Capita.xlsx"
-path.conventions <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx"
+path.emissions <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/APA Emissions Per Capita.xlsx"
+
+path.conventions <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx"
 
 total <- read_excel(path.emissions, sheet = "Emissions Overview") %>% setDT()
 drivers <- read_excel(path.emissions, sheet = "Drivers Only") %>% setDT()

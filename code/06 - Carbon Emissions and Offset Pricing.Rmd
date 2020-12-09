@@ -19,7 +19,7 @@ rm(list = ls()) # Clean R Environment
 
 ## Import Geodistance + Airport Data
 ```{r Import}
-path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance + Airport Data.xlsx"
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geodistance + Airport Data.xlsx"
 
 nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
@@ -202,7 +202,7 @@ for (dest in historical.meetings){
 ### Query Attendee Data
 ```{r API Query NYC}
 # From GoClimate
-api.key <- readRDS("C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GoClimate API/Api_key.rds" )
+api.key <- readRDS("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GoClimate API/Api_key.rds" )
 
 # Initialize query responses
 responses.footprint.nyc <- as.vector(rep(NA, length(query.list.nyc)))
@@ -304,7 +304,7 @@ final.sets <- list("NYC 2018" = nyc.emissions,
                  "Convention Centers" = conventions)
 
 write.xlsx(final.sets,
-           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Attendee Emissions Data (Actual Conference locations only).xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Attendee Emissions Data (Actual Conference locations only).xlsx")
 ```
 
 ### Query Data for past APA Meetings
@@ -366,7 +366,7 @@ hist.export.nyc <- cbind(nyc, historical.emissions.nyc)
 
 # Export 
 write.xlsx(hist.export.nyc, 
-           "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Historical Emissions Data.xlsx")
+           "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Historical Emissions Data.xlsx")
 
 ```
 
@@ -421,7 +421,7 @@ final.emissions.sets <- list("NYC BASE" = hist.export.nyc,
                              "SF BASE" = hist.export.sf)
 
 write.xlsx(final.emissions.sets,
-           file = "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Attendee Emissions Data.xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Attendee Emissions Data.xlsx")
 
 
 

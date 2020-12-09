@@ -20,7 +20,7 @@ rm(list = ls()) # Clean R Environment
 
 ## Import Geodistance Data from 03
 ```{r Import}
-path.in <- "C:/Users/alec.stashevsky/OneDrive - Cadmus/Documents/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geodistance Data.xlsx"
 
 nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
