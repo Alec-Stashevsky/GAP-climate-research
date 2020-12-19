@@ -1,0 +1,280 @@
+---
+title: "01 - Regional Data Prep"
+author: "Alec Stashevsky"
+date: "12/19/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(openxlsx)
+library(tidyverse)
+library(data.table)
+library(geosphere)
+library(ggmap)
+library(sf)
+library(spData)
+library(usdata)
+library(rgdal)
+rm(list = ls()) # Clean R Environment
+```
+
+## Import Geodistance + Airport Data
+```{r Import}
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Geodistance + Airport Data.xlsx"
+
+nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
+
+# Import APA Regions
+path.regions <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Data/APA Regions.xlsx"
+regions <- read_excel(path.regions) %>% setDT()
+
+# Import list of convention centers
+convention.import <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Convention Centers.xlsx", range = "A1:E16")
+
+# Import Global Airport Database
+path.airports <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GlobalAirportDatabase/GlobalAirportDatabase.txt"
+
+# Import that data
+airports.raw <- read.delim(path.airports, header = FALSE, sep = ":") %>% setDT()
+
+# Drop extraneous columns
+airports <- airports.raw[, c(1:5, 14:16)]
+
+# Set column names
+setnames(airports, names(airports), c("ICAO", "IATA", "Airport Name",
+         "City", "Country", "Altitude", "Latitude", "Longitude"))
+
+
+```
+
+
+We only need to add one new regional meeting. Others will take place in previous Annual Meeting Locations.
+Areas:
+  1. Toronto
+  2. New York City
+  3. Philadelphia
+  4. Chicago
+  5. New Orleans
+  6. Los Angeles
+  7. Seattle (New)
+
+## Remove old feilds from main analysis
+```{r Clean Feilds}
+# List of IATA codes to remove from data
+iata.rm <- c("SFO", "DFW", "DCA", "YUL", "MIA", "SAN", "ATL", "HNL")
+
+# Remove columns w/ un-needed fields 
+for (i in 1:length(iata.rm)) {
+  
+  nyc[, grep(iata.rm[i], names(nyc), ignore.case = TRUE) := NULL]
+  sf[, grep(iata.rm[i], names(sf), ignore.case = TRUE) := NULL]
+  phl[, grep(iata.rm[i], names(phl), ignore.case = TRUE) := NULL]
+  
+}
+
+# Fix unabbreviated state
+nyc[STATE == "NORTH CAROLINA"]$STATE <- "NC"
+sf[STATE == "OHIO"]$STATE <- "OH"
+
+# Fix US/Canada mixing
+nyc[COUNTRY == "United States" & STATE == "ON"]$STATE <- "CA"
+nyc[COUNTRY == "United States" & STATE == "BC"]$COUNTRY <- "Canada"
+sf[COUNTRY == "United States" & STATE == "ON"]$COUNTRY <- "Canada"
+sf[COUNTRY == "Canada" & STATE == "NY"]$COUNTRY <- "United States"
+```
+
+
+## Add Seattle Convention Center
+```{r Seattle Convention}
+# Geocode Seattle convention center
+conventions.geo <- mutate_geocode(convention.import, location = location)
+
+# Get destination airports
+airports.dests <- rbind(airports[IATA == 'PHL'],
+                        airports[IATA == 'SFO'],
+                        airports[IATA == 'JFK'],
+                        airports[IATA == 'ORD'],
+                        airports[IATA == 'MSY'],
+                        airports[IATA == 'YYZ'],
+                        airports[IATA == 'LAX'],
+                        airports[IATA == 'DFW'],
+                        airports[IATA == 'DCA'],
+                        airports[IATA == 'YUL'],
+                        airports[IATA == 'MIA'],
+                        airports[IATA == 'SAN'],
+                        airports[IATA == 'ATL'],
+                        airports[IATA == 'HNL'],
+                        airports[IATA == 'SEA']
+                        )
+
+# Attach onto the convention center sheet
+conventions <- data.table(conventions.geo, airports.dests)
+
+# Export 
+write.xlsx(conventions, "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx")
+```
+
+
+## Geodistance to Seattle
+```{r SEA Geodistance}
+# Get convention center coordinates
+sea.dest <- as.numeric(conventions[IATA == "SEA", .(lon, lat)])
+
+# Calculate Geodistance in meters - with ellipsoidal method
+nyc.gdist.SEA <- distGeo(nyc[, .(lon, lat)], sea.dest)
+sf.gdist.SEA <- distGeo(sf[, .(lon, lat)], sea.dest)
+phl.gdist.SEA <- distGeo(phl[, .(lon, lat)], sea.dest)
+
+# Merge to data
+nyc <- data.table(nyc, "gdist.SEA" = nyc.gdist.SEA)
+sf <- data.table(sf, "gdist.SEA" = sf.gdist.SEA)
+phl <- data.table(phl, "gdist.SEA" = phl.gdist.SEA)
+```
+
+
+## Driving distance to SEA indicator
+```{r Driving Distance}
+# Create indicator variable for driving if less than 400 km away from meeting
+nyc[, `:=`(drive.SEA = ifelse(gdist.SEA <= 400000, 1, 0))]
+sf[, `:=`(drive.SEA = ifelse(gdist.SEA <= 400000, 1, 0))]
+phl[, `:=`(drive.SEA = ifelse(gdist.SEA <= 400000, 1, 0))]
+```
+
+
+## Recode State by coordinates
+```{r Recode US States}
+coord_to_state <- function(pointsDF,
+                           states = spData::us_states,
+                           name_col = "NAME") {
+  
+    ## Convert points data.frame to an sf POINTS object
+    pts <- st_as_sf(pointsDF, coords = 1:2, crs = 4326)
+
+    ## Transform spatial data to some planar coordinate system
+    ## (e.g. Web Mercator) as required for geometric operations
+    states <- st_transform(states, crs = 3857)
+    pts <- st_transform(pts, crs = 3857)
+
+    ## Find names of state (if any) intersected by each point
+    state_names <- states[[name_col]]
+    ii <- as.integer(st_intersects(pts, states))
+    output <- state_names[ii]
+}
+
+test <- coord_to_state(nyc[, .(lon, lat)])
+
+for (i in 1:ncol(regions)) {
+  print(state2abbr(regions$`AREA 1`))
+}
+
+
+```
+
+
+## Clean US and CA States
+```{r Reginal Indicators}
+# Clean any Canadian's w/o Provence info
+nyc[COUNTRY =="Canada" & is.na(STATE) & City =="MONTREAL"]$STATE <- "QC"
+nyc[COUNTRY =="Canada" & is.na(STATE) & City =="WINNIPEG"]$STATE <- "MB"
+nyc[COUNTRY =="Canada" & is.na(STATE) & City =="TERRACE"]$STATE <- "BC"
+nyc[COUNTRY =="Canada" & is.na(STATE) &
+      City %in% c("FORT MCMURRAY", "GRANDE PRAIRIE")]$STATE <- "AB"
+
+nyc[COUNTRY =="Canada" & STATE == "CO"]$STATE <- "ON"
+
+sf[COUNTRY =="Canada" & is.na(STATE) & City == "KAMLOOPS"]$STATE <- "BC"
+sf[COUNTRY =="Canada" & is.na(STATE) &
+     City %in% c("LA GRANDE RIVIERE", "GATINEAU")]$STATE <- "QC"
+
+# United States
+nyc[COUNTRY =="United States" & is.na(STATE) & City == "EVERETT"]$STATE <- "WA"
+nyc[COUNTRY =="United States" & is.na(STATE) & City == "TULSA"]$STATE <- "OK"
+nyc[COUNTRY =="United States" & is.na(STATE) & City == "FORT DRUM"]$STATE <- "NY"
+
+sf[COUNTRY =="United States" & is.na(STATE) & City == "CHARLOTTE"]$STATE <- "NC"
+sf[COUNTRY =="United States" & is.na(STATE) & City == "TULSA"]$STATE <- "OK"
+sf[COUNTRY =="United States" & is.na(STATE) & City == "EVERETT"]$STATE <- "WA"
+
+# Fix Spain location coded as United States
+sf[COUNTRY =="United States" & is.na(STATE) & City == "MADRID"]$COUNTRY <- "Spain"
+```
+
+
+## APA Regional Indicators
+```{r Regional Indicators}
+# Create area lists for US
+area1 <- state2abbr(regions$`AREA 1`)[!is.na(state2abbr(regions$`AREA 1`))]
+area1 <- area1[area1 != "NV"] # remove mis-coded state
+area2 <- state2abbr(regions$`AREA 2`)[!is.na(state2abbr(regions$`AREA 2`))]
+area3 <- state2abbr(regions$`AREA 3`)[!is.na(state2abbr(regions$`AREA 3`))]
+area3[area3 == "WA"] <- "DC" # recode Washington DC instead of WA
+area4 <- state2abbr(regions$`AREA 4`)[!is.na(state2abbr(regions$`AREA 4`))]
+area5 <- state2abbr(regions$`AREA 5`)[!is.na(state2abbr(regions$`AREA 5`))]
+area5 <- c(area5, "PR", "AS", "AE") # Add Puerto Rico and leftover military locations
+area6 <- state2abbr(regions$`AREA 6`)[!is.na(state2abbr(regions$`AREA 6`))]
+area7 <- state2abbr(regions$`AREA 7`)[!is.na(state2abbr(regions$`AREA 7`))]
+area7 <- head(area7, length(area7) - 1) # remove extra NV from Canadian Provence
+
+# Create area lists for Canada
+area1.ca <- c("QC", "ON", "NS", "NB", "NL", "PE") # Eastern Canada
+area7.ca <- c("AB", "BC", "MB", "SK", "YT", "NT", "NU") # Western Canada
+
+# New York Base
+nyc[COUNTRY == "United States", `:=`(APA.region = fcase(STATE %in% area1, 1,
+                                                        STATE %in% area2, 2,
+                                                        STATE %in% area3, 3,
+                                                        STATE %in% area4, 4,
+                                                        STATE %in% area5, 5,
+                                                        STATE %in% area6, 6,
+                                                        STATE %in% area7, 7))]
+
+nyc[COUNTRY == "Canada", `:=`(APA.region = fcase(STATE %in% area1.ca, 1,
+                                                 STATE %in% area7.ca, 7)
+                              )]
+
+# San Francisco Base
+sf[COUNTRY == "United States", `:=`(APA.region = fcase(STATE %in% area1, 1,
+                                                       STATE %in% area2, 2,
+                                                       STATE %in% area3, 3,
+                                                       STATE %in% area4, 4,
+                                                       STATE %in% area5, 5,
+                                                       STATE %in% area6, 6,
+                                                       STATE %in% area7, 7))]
+
+sf[COUNTRY == "Canada", `:=`(APA.region = fcase(STATE %in% area1.ca, 1,
+                                                 STATE %in% area7.ca, 7)
+                              )]
+
+## Do PHL even though it was not cleaned for weird US/ Canada states
+# Philadelphia Base
+phl[COUNTRY == "United States", `:=`(APA.region = fcase(STATE %in% area1, 1,
+                                                       STATE %in% area2, 2,
+                                                       STATE %in% area3, 3,
+                                                       STATE %in% area4, 4,
+                                                       STATE %in% area5, 5,
+                                                       STATE %in% area6, 6,
+                                                       STATE %in% area7, 7))]
+
+phl[COUNTRY == "Canada", `:=`(APA.region = fcase(STATE %in% area1.ca, 1,
+                                                 STATE %in% area7.ca, 7)
+                              )]
+
+
+
+```
+
+
+## Save Airport Data
+```{r Export Data}
+final.sets <- list("NYC 2018" = nyc,
+                 "SF 2019" = sf,
+                 "PHL 2020" = phl,
+                 "Convention Centers" = conventions)
+
+write.xlsx(final.sets,
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Geodistance + Airport Data.xlsx")
+```
