@@ -13,10 +13,8 @@ library(tidyverse)
 library(data.table)
 library(geosphere)
 library(ggmap)
-library(sf)
-library(spData)
 library(usdata)
-library(rgdal)
+library(rlist)
 rm(list = ls()) # Clean R Environment
 ```
 
@@ -145,36 +143,6 @@ phl[, `:=`(drive.SEA = ifelse(gdist.SEA <= 400000, 1, 0))]
 ```
 
 
-## Recode State by coordinates
-```{r Recode US States}
-coord_to_state <- function(pointsDF,
-                           states = spData::us_states,
-                           name_col = "NAME") {
-  
-    ## Convert points data.frame to an sf POINTS object
-    pts <- st_as_sf(pointsDF, coords = 1:2, crs = 4326)
-
-    ## Transform spatial data to some planar coordinate system
-    ## (e.g. Web Mercator) as required for geometric operations
-    states <- st_transform(states, crs = 3857)
-    pts <- st_transform(pts, crs = 3857)
-
-    ## Find names of state (if any) intersected by each point
-    state_names <- states[[name_col]]
-    ii <- as.integer(st_intersects(pts, states))
-    output <- state_names[ii]
-}
-
-test <- coord_to_state(nyc[, .(lon, lat)])
-
-for (i in 1:ncol(regions)) {
-  print(state2abbr(regions$`AREA 1`))
-}
-
-
-```
-
-
 ## Clean US and CA States
 ```{r Reginal Indicators}
 # Clean any Canadian's w/o Provence info
@@ -268,13 +236,105 @@ phl[COUNTRY == "Canada", `:=`(APA.region = fcase(STATE %in% area1.ca, 1,
 ```
 
 
+## Create Regional Destination Airport Field
+```{r Regional Destination}
+
+# Select only 7 regional conventions
+regional.conventions <- conventions[!(IATA %in% iata.rm)]
+
+# Initialize minimum distance list
+min.dists <- vector(mode = "list", 3)
+min.conference <- vector(mode = "list", 3)
+names(min.dists) <- c("NYC", "SF", "PHL")
+names(min.conference) <- c("NYC", "SF", "PHL")
+
+# Calculate minimum dist for int'l attendees across 7 locations
+min.dists[[1]] <- apply(nyc[, c("gdist.PHL", "gdist.JFK", "gdist.ORD", "gdist.MSY",
+                                "gdist.YYZ", "gdist.LAX", "gdist.SEA")], 1,
+                        FUN = which.min)
+
+min.dists[[2]] <- apply(sf[, c("gdist.PHL", "gdist.JFK", "gdist.ORD", "gdist.MSY",
+                                "gdist.YYZ", "gdist.LAX", "gdist.SEA")], 1,
+                        FUN = which.min)
+
+min.dists[[3]] <- apply(phl[, c("gdist.PHL", "gdist.JFK", "gdist.ORD", "gdist.MSY",
+                                "gdist.YYZ", "gdist.LAX", "gdist.SEA")], 1,
+                        FUN = which.min)
+
+
+# Recode col numbers to corresponding IATA codes 
+for (i in 1:3) {
+  min.conference[[i]] <- recode(min.dists[[i]],
+                                `1` = regional.conventions$IATA[1],
+                                `2` = regional.conventions$IATA[2],
+                                `3` = regional.conventions$IATA[3],
+                                `4` = regional.conventions$IATA[4],
+                                `5` = regional.conventions$IATA[5],
+                                `6` = regional.conventions$IATA[6],
+                                `7` = regional.conventions$IATA[7]
+                                )
+}
+
+# Merge on to original data
+nyc.final <- data.table(nyc, "CnumMinDistance" = min.dists[[1]],
+                        "InternationalConf" = min.conference[[1]])
+
+sf.final <- data.table(sf, "CnumMinDistance" = min.dists[[2]],
+                       "InternationalConf" = min.conference[[2]])
+
+phl.final <- data.table(phl, "CnumMinDistance" = min.dists[[3]],
+                        "InternationalConf" = min.conference[[3]])
+
+# New column w/ fixed location per each APA region
+nyc.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
+                                                APA.region == 2, "NYC",
+                                                APA.region == 3, "PHL",
+                                                APA.region == 4, "ORD",
+                                                APA.region == 5, "MSY",
+                                                APA.region == 6, "LAX",
+                                                APA.region == 7, "SEA"
+                                                )
+                 )]
+
+sf.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
+                                               APA.region == 2, "NYC",
+                                               APA.region == 3, "PHL",
+                                               APA.region == 4, "ORD",
+                                               APA.region == 5, "MSY",
+                                               APA.region == 6, "LAX",
+                                               APA.region == 7, "SEA"
+                                               )
+                )]
+
+phl.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
+                                                APA.region == 2, "NYC",
+                                                APA.region == 3, "PHL",
+                                                APA.region == 4, "ORD",
+                                                APA.region == 5, "MSY",
+                                                APA.region == 6, "LAX",
+                                                APA.region == 7, "SEA"
+                                                )
+                 )]
+
+# Fill-in int'l attendees with the closest regional meeting
+nyc.final[is.na(`Regional Destination`)]$`Regional Destination` <- nyc.final[is.na(`Regional Destination`)]$InternationalConf
+
+sf.final[is.na(`Regional Destination`)]$`Regional Destination` <- sf.final[is.na(`Regional Destination`)]$InternationalConf
+
+phl.final[is.na(`Regional Destination`)]$`Regional Destination` <- phl.final[is.na(`Regional Destination`)]$InternationalConf
+
+```
+
+
+
+
 ## Save Airport Data
 ```{r Export Data}
-final.sets <- list("NYC 2018" = nyc,
-                 "SF 2019" = sf,
-                 "PHL 2020" = phl,
-                 "Convention Centers" = conventions)
+final.sets <- list("NYC 2018" = nyc.final,
+                   "SF 2019"  = sf.final,
+                   "PHL 2020" = phl.final,
+                   "Convention Centers" = conventions)
 
 write.xlsx(final.sets,
-           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Geodistance + Airport Data.xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Regional GeoData.xlsx")
 ```
