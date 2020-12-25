@@ -87,7 +87,8 @@ sf[COUNTRY == "Canada" & STATE == "NY"]$COUNTRY <- "United States"
 
 
 ## Add Seattle Convention Center
-```{r Seattle Convention}
+# Do not evaluate this chunk - geocodeing already done
+```{r Seattle Convention, eval=FALSE}
 # Geocode Seattle convention center
 conventions.geo <- mutate_geocode(convention.import, location = location)
 
@@ -114,6 +115,11 @@ conventions <- data.table(conventions.geo, airports.dests)
 
 # Export 
 write.xlsx(conventions, "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx")
+```
+
+
+```{r Import Updated Conventions}
+conventions <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/APA Convention Center GeoData.xlsx") %>% setDT()
 ```
 
 
@@ -245,8 +251,8 @@ regional.conventions <- conventions[!(IATA %in% iata.rm)]
 # Initialize minimum distance list
 min.dists <- vector(mode = "list", 3)
 min.conference <- vector(mode = "list", 3)
-names(min.dists) <- c("NYC", "SF", "PHL")
-names(min.conference) <- c("NYC", "SF", "PHL")
+names(min.dists) <- c("JFK", "SF", "PHL")
+names(min.conference) <- c("JFK", "SF", "PHL")
 
 # Calculate minimum dist for int'l attendees across 7 locations
 min.dists[[1]] <- apply(nyc[, c("gdist.PHL", "gdist.JFK", "gdist.ORD", "gdist.MSY",
@@ -277,17 +283,17 @@ for (i in 1:3) {
 
 # Merge on to original data
 nyc.final <- data.table(nyc, "CnumMinDistance" = min.dists[[1]],
-                        "InternationalConf" = min.conference[[1]])
+                        "closestConf" = min.conference[[1]])
 
 sf.final <- data.table(sf, "CnumMinDistance" = min.dists[[2]],
-                       "InternationalConf" = min.conference[[2]])
+                       "closestConf" = min.conference[[2]])
 
 phl.final <- data.table(phl, "CnumMinDistance" = min.dists[[3]],
-                        "InternationalConf" = min.conference[[3]])
+                        "closestConf" = min.conference[[3]])
 
 # New column w/ fixed location per each APA region
 nyc.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
-                                                APA.region == 2, "NYC",
+                                                APA.region == 2, "JFK",
                                                 APA.region == 3, "PHL",
                                                 APA.region == 4, "ORD",
                                                 APA.region == 5, "MSY",
@@ -297,7 +303,7 @@ nyc.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
                  )]
 
 sf.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
-                                               APA.region == 2, "NYC",
+                                               APA.region == 2, "JFK",
                                                APA.region == 3, "PHL",
                                                APA.region == 4, "ORD",
                                                APA.region == 5, "MSY",
@@ -307,7 +313,7 @@ sf.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
                 )]
 
 phl.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
-                                                APA.region == 2, "NYC",
+                                                APA.region == 2, "JFK",
                                                 APA.region == 3, "PHL",
                                                 APA.region == 4, "ORD",
                                                 APA.region == 5, "MSY",
@@ -317,11 +323,11 @@ phl.final[, `:=`("Regional Destination" = fcase(APA.region == 1, "YYZ",
                  )]
 
 # Fill-in int'l attendees with the closest regional meeting
-nyc.final[is.na(`Regional Destination`)]$`Regional Destination` <- nyc.final[is.na(`Regional Destination`)]$InternationalConf
+nyc.final[is.na(`Regional Destination`)]$`Regional Destination` <- nyc.final[is.na(`Regional Destination`)]$closestConf
 
-sf.final[is.na(`Regional Destination`)]$`Regional Destination` <- sf.final[is.na(`Regional Destination`)]$InternationalConf
+sf.final[is.na(`Regional Destination`)]$`Regional Destination` <- sf.final[is.na(`Regional Destination`)]$closestConf
 
-phl.final[is.na(`Regional Destination`)]$`Regional Destination` <- phl.final[is.na(`Regional Destination`)]$InternationalConf
+phl.final[is.na(`Regional Destination`)]$`Regional Destination` <- phl.final[is.na(`Regional Destination`)]$closestConf
 
 ```
 
