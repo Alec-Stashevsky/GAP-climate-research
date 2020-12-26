@@ -66,6 +66,27 @@ for (i in 1:lengths(dests)) {
   
 }
 
+# Get city names
+ lgnd.vec <- rep(NA, lengths(dests))
+ k <- 1
+ for (d in dests[[1]]) {
+   lgnd.vec[k] <- conventions[IATA == d]$CITY
+   k <- k + 1
+ }
+
+ # Add Legend
+ legend("bottomleft", 
+  legend = lgnd.vec, 
+  col = viridis(lengths(dests), begin = 0.2, alpha = 0.9),
+  pch = 19, 
+  bty = "n",
+  pt.bg = "white",
+  pt.cex = 0.75, 
+  cex = 0.5, 
+  text.col = "white",
+  ncol = 2,
+  title = "Regional Conference")
+
 # Add title
 title(main = "Regional APA Meeting (NYC Base)",
       col.main = "white", col.sub = "white")
@@ -87,6 +108,19 @@ for (i in 1:lengths(dests)) {
     )
   
 }
+
+# Add Legend
+ legend("bottomleft", 
+  legend = lgnd.vec, 
+  col = viridis(lengths(dests), begin = 0.2, alpha = 0.9),
+  pch = 19, 
+  bty = "n",
+  pt.bg = "white",
+  pt.cex = 0.75, 
+  cex = 0.5, 
+  text.col = "white",
+  ncol = 2,
+  title = "Regional Conference")
 
 # Add title
 title(main = "Regional APA Meeting (SF Base)",
@@ -147,14 +181,7 @@ lapply(names(dest.cols.list), flight.network, data = nyc, endpts = TRUE)
  #    col = "white"
  #    )
 
-# Get city names
- lgnd.vec <- rep(NA, lengths(dests))
- k <- 1
- for (d in dests[[1]]) {
-   lgnd.vec[k] <- conventions[IATA == d]$CITY
-   k <- k + 1
- }
-
+# Add Legend
  legend("bottomleft", 
   legend = lgnd.vec, 
   col = viridis(lengths(dests), begin = 0.2, alpha = 0.9),
