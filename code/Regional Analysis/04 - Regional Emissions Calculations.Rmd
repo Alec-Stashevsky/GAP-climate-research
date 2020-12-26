@@ -1,0 +1,100 @@
+---
+title: "04 - Emissions Calculation"
+author: "Alec Stashevsky"
+date: "12/26/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(openxlsx)
+library(tidyverse)
+library(data.table)
+rm(list = ls()) # Clean R Environment
+```
+
+## Import Data
+```{r Import}
+
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Regional Emissions.xlsx"
+
+nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
+  setDT()
+```
+
+## Prep Calculations
+```{r Prep}
+# Combine corresponding driving indicators
+nyc[, `:=`(Driver = fcase(
+  `Regional Destination` == "JFK", drive.JFK,
+  `Regional Destination` == "ORD", drive.ORD,
+  `Regional Destination` == "PHL", drive.PHL, 
+  `Regional Destination` == "YYZ", drive.YYZ,
+  `Regional Destination` == "MSY", drive.MSY,
+  `Regional Destination` == "SEA", drive.SEA,
+  `Regional Destination` == "LAX", drive.LAX),
+  
+  "Driver Distance" = fcase(
+    `Regional Destination` == "JFK", gdist.JFK,
+    `Regional Destination` == "ORD", gdist.ORD,
+    `Regional Destination` == "PHL", gdist.PHL,
+    `Regional Destination` == "YYZ", gdist.YYZ,
+    `Regional Destination` == "MSY", gdist.MSY,
+    `Regional Destination` == "SEA", gdist.SEA,
+    `Regional Destination` == "LAX", gdist.LAX)
+  )]
+
+sf[, `:=`(Driver = fcase(
+  `Regional Destination` == "JFK", drive.JFK,
+  `Regional Destination` == "ORD", drive.ORD,
+  `Regional Destination` == "PHL", drive.PHL, 
+  `Regional Destination` == "YYZ", drive.YYZ,
+  `Regional Destination` == "MSY", drive.MSY,
+  `Regional Destination` == "SEA", drive.SEA,
+  `Regional Destination` == "LAX", drive.LAX),
+  
+  "Driver Distance" = fcase(
+    `Regional Destination` == "JFK", gdist.JFK,
+    `Regional Destination` == "ORD", gdist.ORD,
+    `Regional Destination` == "PHL", gdist.PHL,
+    `Regional Destination` == "YYZ", gdist.YYZ,
+    `Regional Destination` == "MSY", gdist.MSY,
+    `Regional Destination` == "SEA", gdist.SEA,
+    `Regional Destination` == "LAX", gdist.LAX)
+  )]
+
+phl[, `:=`(Driver = fcase(
+  `Regional Destination` == "JFK", drive.JFK,
+  `Regional Destination` == "ORD", drive.ORD,
+  `Regional Destination` == "PHL", drive.PHL, 
+  `Regional Destination` == "YYZ", drive.YYZ,
+  `Regional Destination` == "MSY", drive.MSY,
+  `Regional Destination` == "SEA", drive.SEA,
+  `Regional Destination` == "LAX", drive.LAX),
+  
+  "Driver Distance" = fcase(
+    `Regional Destination` == "JFK", gdist.JFK,
+    `Regional Destination` == "ORD", gdist.ORD,
+    `Regional Destination` == "PHL", gdist.PHL,
+    `Regional Destination` == "YYZ", gdist.YYZ,
+    `Regional Destination` == "MSY", gdist.MSY,
+    `Regional Destination` == "SEA", gdist.SEA,
+    `Regional Destination` == "LAX", gdist.LAX)
+  )]
+```
+
+
+```{r Export}
+## Save Prepped Emissions Data
+final.sets <- list("NYC 2018" = nyc,
+                 "SF 2019" = sf,
+                 "PHL 2020" = phl,
+                 "Convention Centers" = conventions)
+
+write.xlsx(final.sets,
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Regional Emissions (Prepped).xlsx")
+```
