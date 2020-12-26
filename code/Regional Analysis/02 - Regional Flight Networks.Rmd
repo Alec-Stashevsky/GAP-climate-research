@@ -1,0 +1,263 @@
+---
+title: "02 - Regional Flight Networks"
+author: "Alec Stashevsky"
+date: "12/25/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+library(readxl)
+library(openxlsx)
+library(maps)
+library(rgeos)
+library(maptools)
+library(geosphere)
+library(plyr)
+library(viridis)
+rm(list = ls()) # Clean R Environment
+```
+
+
+## Import Regional GeoData
+```{r Import}
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Regional GeoData.xlsx"
+
+nyc <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
+sf <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
+phl <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
+  setDT()
+```
+
+## Plot Flight Network
+
+### NYC 2018
+```{r Regional NYC Plot}
+# Initialize write to pdf
+pdf(file = "APA Regional Flight Networks.pdf", width = 8, height = 6)
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Get regional destinations
+dests <- list(unique(nyc$`Regional Destination`))
+
+# Generate colors 
+dest.cols <- viridis(lengths(dests), begin = 0.2, alpha = 0.38)
+dest.cols.list <- as.list(viridis(lengths(dests), begin = 0.2, alpha = 0.38))
+
+# Rename list elements
+for (i in 1:length(dest.cols)) {
+  names(dest.cols.list)[i] <- dests[[1]][i]
+}
+
+# Generate points, colored by APA region
+for (i in 1:lengths(dests)) {
+  
+  points(
+    x = nyc[`Regional Destination` == dests[[1]][i]]$lon,
+    y = nyc[`Regional Destination` == dests[[1]][i]]$lat,
+    pch=19, cex = log(nyc$Frequency)/50,
+    col = dest.cols[i]
+    )
+  
+}
+
+# Add title
+title(main = "Regional APA Meeting (NYC Base)",
+      col.main = "white", col.sub = "white")
+```
+
+### SF 2019
+```{r Regional SF Plot}
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Generate points, colored by APA region
+for (i in 1:lengths(dests)) {
+  
+  points(
+    x = sf[`Regional Destination` == dests[[1]][i]]$lon,
+    y = sf[`Regional Destination` == dests[[1]][i]]$lat,
+    pch=19, cex = log(sf$Frequency)/50,
+    col = dest.cols[i]
+    )
+  
+}
+
+# Add title
+title(main = "Regional APA Meeting (SF Base)",
+      col.main = "white", col.sub = "white")
+```
+
+
+
+```{r NYC Regional Flight Network}
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+
+# Define function to generate flight path arcs
+flight.network <- function(data, region, endpts = FALSE) {
+  
+  # Filter data to only region
+  plot.data <- data[`Regional Destination` == region]
+  
+  for (i in 1:nrow(plot.data)) {
+    
+    routes <- gcIntermediate(
+    
+      # Origin coords
+      c(plot.data[i]$lon,
+        plot.data[i]$lat),
+      
+      # Destination coords
+      c(conventions[IATA == plot.data[i]$`Regional Destination`]$lon,
+        conventions[IATA == plot.data[i]$`Regional Destination`]$lat),
+      
+      100,
+      addStartEnd = endpts,
+      breakAtDateLine = TRUE,
+      sp = TRUE
+      )
+    
+      if (plot.data[i]$Frequency >= quantile(plot.data$Frequency, probs = 0.95)) {
+        edge.ind <- 12
+      } else {
+        edge.ind <- round(500 * plot.data[i]$Frequency / max(plot.data$Frequency))
+      }
+      
+      lines(routes, col = dest.cols.list[[region]],
+        lwd = edge.ind / 50)
+  }
+}
+
+# Plots flight paths
+lapply(names(dest.cols.list), flight.network, data = nyc, endpts = TRUE)
+
+# Add convention points
+ # points(
+ #    x = conventions[IATA %in% names(dest.cols.list)]$lon,
+ #    y = conventions[IATA %in% names(dest.cols.list)]$lat,
+ #    pch = 1, cex = 0.5, 
+ #    col = "white"
+ #    )
+
+# Get city names
+ lgnd.vec <- rep(NA, lengths(dests))
+ k <- 1
+ for (d in dests[[1]]) {
+   lgnd.vec[k] <- conventions[IATA == d]$CITY
+   k <- k + 1
+ }
+
+ legend("bottomleft", 
+  legend = lgnd.vec, 
+  col = viridis(lengths(dests), begin = 0.2, alpha = 0.9),
+  pch = 19, 
+  bty = "n",
+  pt.bg = "white",
+  pt.cex = 0.75, 
+  cex = 0.5, 
+  text.col = "white",
+  ncol = 2,
+  title = "Regional Conference")
+
+# Add Flight plot aesthetics
+title(main = "APA Regional Conference Flight Network (NYC 2018 Base)",
+      col.main = "white", cex.main = 0.75)
+```
+
+
+## No International Attendees
+```{r NYC Regional Flight Network (No Int'l)}
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Plots flight paths
+lapply(names(dest.cols.list),
+  flight.network,
+  data = nyc[!is.na(APA.region)],
+  endpts = TRUE)
+
+ legend("bottomleft", 
+  legend = lgnd.vec, 
+  col = viridis(lengths(dests), begin = 0.2, alpha = 0.9),
+  pch = 19, 
+  bty = "n",
+  pt.bg = "white",
+  pt.cex = 0.75, 
+  cex = 0.5, 
+  text.col = "white",
+  ncol = 2,
+  title = "Regional Conference")
+
+# Add Flight plot aesthetics
+title(main = "APA Regional Conference Flight Network (NYC 2018 Base)",
+      col.main = "white", cex.main = 0.75)
+```
+
+# San Francisco
+```{r SF Regional Flight Network}
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Plots flight paths
+lapply(names(dest.cols.list),
+  flight.network,
+  data = sf,
+  endpts = TRUE)
+
+ legend("bottomleft", 
+  legend = lgnd.vec, 
+  col = viridis(lengths(dests), begin = 0.2, alpha = 0.9),
+  pch = 19, 
+  bty = "n",
+  pt.bg = "white",
+  pt.cex = 0.75, 
+  cex = 0.5, 
+  text.col = "white",
+  ncol = 2,
+  title = "Regional Conference")
+
+# Add Flight plot aesthetics
+title(main = "APA Regional Conference Flight Network (SF 2019 Base)",
+      col.main = "white", cex.main = 0.75)
+```
+
+## SF No APA regional members
+```{r SF Regional Flight Network (No int'l)}
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Plots flight paths
+lapply(names(dest.cols.list),
+  flight.network,
+  data = sf[!is.na(APA.region)],
+  endpts = TRUE)
+
+ legend("bottomleft", 
+  legend = lgnd.vec, 
+  col = viridis(lengths(dests), begin = 0.2, alpha = 0.9),
+  pch = 19, 
+  bty = "n",
+  pt.bg = "white",
+  pt.cex = 0.75, 
+  cex = 0.5, 
+  text.col = "white",
+  ncol = 2,
+  title = "Regional Conference")
+
+# Add Flight plot aesthetics
+title(main = "APA Regional Conference Flight Network (SF 2018 Base)",
+      col.main = "white", cex.main = 0.75)
+
+dev.off()
+```
