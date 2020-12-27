@@ -331,6 +331,26 @@ phl.final[is.na(`Regional Destination`)]$`Regional Destination` <- phl.final[is.
 
 ```
 
+```{r Minor corrections}
+# Two int'l members labeled as US in NYC
+nyc.final[COUNTRY == "United States" & Country == "KOREA"]$STATE <- NA
+nyc.final[COUNTRY == "United States" & Country == "KOREA"]$APA.region <- NA
+nyc.final[COUNTRY == "United States" & Country == "KOREA"]$`Regional Destination` <- "SEA"
+nyc.final[COUNTRY == "United States" & Country == "KOREA"]$location <- "Chuncheon, Korea"
+nyc.final[COUNTRY == "United States" & Country == "KOREA"]$COUNTRY <- "Korea, Republic of"
+
+nyc.final[COUNTRY == "United States" & Country == "QATAR"]$STATE <- NA
+nyc.final[COUNTRY == "United States" & Country == "QATAR"]$APA.region <- NA
+nyc.final[COUNTRY == "United States" & Country == "QATAR"]$location <- "Doha, Qatar"
+nyc.final[COUNTRY == "United States" & Country == "QATAR"]$COUNTRY <- "Qatar"
+
+# SF
+sf.final[COUNTRY == "United States" & Country == "PAKISTAN"]$STATE <- NA
+sf.final[COUNTRY == "United States" & Country == "PAKISTAN"]$APA.region <- NA
+sf.final[COUNTRY == "United States" & Country == "PAKISTAN"]$`Regional Destination` <- "YYZ"
+sf.final[COUNTRY == "United States" & Country == "PAKISTAN"]$location <- "Karachi, Pakistan"
+sf.final[COUNTRY == "United States" & Country == "PAKISTAN"]$COUNTRY <- "Pakistan"
+```
 
 
 
