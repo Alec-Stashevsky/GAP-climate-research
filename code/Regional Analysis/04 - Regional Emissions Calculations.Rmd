@@ -87,13 +87,91 @@ phl[, `:=`(Driver = fcase(
   )]
 ```
 
+# Test against main analysis
 
-```{r Export}
-## Save Prepped Emissions Data
-final.sets <- list("NYC 2018" = nyc,
-                 "SF 2019" = sf,
-                 "PHL 2020" = phl,
-                 "Convention Centers" = conventions)
+There are slightly different number of people, import main analysis and check 
+observations that are missing.
+
+```{r Import Main}
+main.nyc <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx", sheet = "NYC 2018") %>% setDT()
+
+# Merge to check, frequency
+merge.test <- merge(nyc[ATTENDEE_STATUS == "Approved"],
+  main.nyc[, .(location, lat, lon, Frequency)],
+  by = c("location", "lat", "lon"), all = TRUE)
+
+sum(merge.test$Frequency.y, na.rm = TRUE)
+sum(merge.test$Frequency.x, na.rm = TRUE)
+
+# Replace mismatched frequency w/ main analysis
+# ## (since this was edited for some mislabeled data)
+# 
+# merge.test[Frequency.x != Frequency.y]$Frequency.x <- merge.test[Frequency.x != Frequency.y]$Frequency.y
+# 
+# # Save finalized analysis dataset
+# nyc.fix <- merge.test[location %in% main.nyc$location][!is.na(Frequency.x)]
+
+# Rename variables
+nyc.fix <- merge.test[, `:=`(
+  Frequency = Frequency.y,
+  Frequency.x = NULL
+  )][, Frequency.y := NULL][!is.na(Frequency)]
+
+# Original column names 
+col.order <- c("ATTENDEE_STATUS", "CITY", "STATE", "COUNTRY",	"location",	"lon",
+  "lat", "Frequency",	"gdist.PHL", "gdist.JFK", "gdist.ORD", "gdist.MSY",
+  "gdist.YYZ", "gdist.LAX", "drive.PHL", "drive.JFK", "drive.ORD", "drive.MSY",
+  "drive.YYZ", "drive.LAX",	"ICAO",	"IATA", "Airport Name",	"City",	"Country",
+  "Altitude",	"Latitude",	"Longitude", "airport_dist_meters", "gdist.SEA",
+  "drive.SEA", "APA.region", "CnumMinDistance", "closestConf",
+  "Regional Destination", "Footprint", "Offset", "Driver", "Driver Distance")
+
+# Reorder columns
+setcolorder(nyc.fix, col.order)
+```
+
+```{r Import Main SF}
+main.sf <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx", sheet = "SF 2019") %>% setDT()
+
+# Merge to check, frequency
+merge.test.sf <- merge(sf, main.sf[, .(location, lat, lon, Frequency)],
+  by = c("location", "lat", "lon"), all = TRUE)
+
+sum(merge.test.sf$Frequency.y, na.rm = TRUE)
+sum(merge.test.sf$Frequency.x, na.rm = TRUE)
+
+
+
+# Replace mismatched frequency w/ main analysis 
+## (since this was edited for some mislabeled data)
+
+# merge.test.sf[Frequency.x != Frequency.y]$Frequency.x <- merge.test.sf[Frequency.x != Frequency.y]$Frequency.y
+
+# Save finalized analysis dataset remove row of 10 people for "Karachi, VA US"
+## Mislabel
+# 
+# sf.fix <- merge.test.sf[!is.na(Frequency.x)][location != "Karachi, VA, US"]
+# sum(sf.fix$Frequency.x)
+
+
+# Rename variables
+sf.fix <- merge.test.sf[, `:=`(
+  Frequency = Frequency.y,
+  Frequency.x = NULL
+  )][, Frequency.y := NULL][!is.na(Frequency)]
+
+# Reorder columns
+setcolorder(sf.fix, col.order)
+
+```
+
+
+## Export
+```{r Export Data}
+final.sets <- list("NYC 2018" = nyc.fix,
+                   "SF 2019"  = sf.fix,
+                   "PHL 2020" = phl,
+                   "Convention Centers" = conventions)
 
 write.xlsx(final.sets,
            file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Regional Emissions (Prepped).xlsx")
