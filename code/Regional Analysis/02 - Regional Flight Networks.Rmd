@@ -37,7 +37,8 @@ conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
 ### NYC 2018
 ```{r Regional NYC Plot}
 # Initialize write to pdf
-pdf(file = "APA Regional Flight Networks.pdf", width = 8, height = 6)
+pdf(file = paste0(getwd(),"/visualizations/APA Regional Flight Networks.pdf"),
+  width = 8, height = 6)
 
 # Plot a map of the united states:
 map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
@@ -283,7 +284,7 @@ lapply(names(dest.cols.list),
   title = "Regional Conference")
 
 # Add Flight plot aesthetics
-title(main = "APA Regional Conference Flight Network (SF 2018 Base)",
+title(main = "APA Regional Conference Flight Network (SF 2019 Base)",
       col.main = "white", cex.main = 0.75)
 
 dev.off()
