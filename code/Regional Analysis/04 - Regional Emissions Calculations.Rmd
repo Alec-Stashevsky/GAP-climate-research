@@ -96,9 +96,9 @@ observations that are missing.
 main.nyc <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx", sheet = "NYC 2018") %>% setDT()
 
 # Merge to check, frequency
-merge.test <- merge(nyc[ATTENDEE_STATUS == "Approved"],
+merge.test <- merge(nyc,
   main.nyc[, .(location, lat, lon, Frequency)],
-  by = c("location", "lat", "lon"), all = TRUE)
+  by = c("location", "lat", "lon"), all.x = TRUE)
 
 sum(merge.test$Frequency.y, na.rm = TRUE)
 sum(merge.test$Frequency.x, na.rm = TRUE)
@@ -106,16 +106,15 @@ sum(merge.test$Frequency.x, na.rm = TRUE)
 # Replace mismatched frequency w/ main analysis
 # ## (since this was edited for some mislabeled data)
 # 
-# merge.test[Frequency.x != Frequency.y]$Frequency.x <- merge.test[Frequency.x != Frequency.y]$Frequency.y
+# merge.test[Frequency.x != Frequency.y & !is.na(Frequency.y)]$Frequency.x <- merge.test[Frequency.x != Frequency.y & !is.na(Frequency.y)]$Frequency.y
 # 
 # # Save finalized analysis dataset
 # nyc.fix <- merge.test[location %in% main.nyc$location][!is.na(Frequency.x)]
 
 # Rename variables
 nyc.fix <- merge.test[, `:=`(
-  Frequency = Frequency.y,
-  Frequency.x = NULL
-  )][, Frequency.y := NULL][!is.na(Frequency)]
+  Frequency = Frequency.x)][
+    , Frequency.x := NULL]
 
 # Original column names 
 col.order <- c("ATTENDEE_STATUS", "CITY", "STATE", "COUNTRY",	"location",	"lon",
@@ -128,14 +127,16 @@ col.order <- c("ATTENDEE_STATUS", "CITY", "STATE", "COUNTRY",	"location",	"lon",
 
 # Reorder columns
 setcolorder(nyc.fix, col.order)
+setnames(nyc.fix, old = "Frequency.y", new = "Frequency Adjusted")
 ```
 
 ```{r Import Main SF}
 main.sf <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx", sheet = "SF 2019") %>% setDT()
 
 # Merge to check, frequency
-merge.test.sf <- merge(sf, main.sf[, .(location, lat, lon, Frequency)],
-  by = c("location", "lat", "lon"), all = TRUE)
+merge.test.sf <- merge(sf,
+  main.sf[, .(location, lat, lon, Frequency)],
+  by = c("location", "lat", "lon"), all.x = TRUE)
 
 sum(merge.test.sf$Frequency.y, na.rm = TRUE)
 sum(merge.test.sf$Frequency.x, na.rm = TRUE)
@@ -156,13 +157,12 @@ sum(merge.test.sf$Frequency.x, na.rm = TRUE)
 
 # Rename variables
 sf.fix <- merge.test.sf[, `:=`(
-  Frequency = Frequency.y,
-  Frequency.x = NULL
-  )][, Frequency.y := NULL][!is.na(Frequency)]
+  Frequency = Frequency.x)][
+    , Frequency.x := NULL]
 
 # Reorder columns
 setcolorder(sf.fix, col.order)
-
+setnames(sf.fix, old = "Frequency.y", new = "Frequency Adjusted")
 ```
 
 
