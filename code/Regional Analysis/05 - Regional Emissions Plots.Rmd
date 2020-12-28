@@ -114,7 +114,7 @@ ggplot(emissions.share, aes(x = fct_rev(Region),
   geom_col(position="fill") +
   geom_hline(yintercept = 0.5, lwd = 0.5) +
   facet_wrap(~`Attendance Base`) +
-  xlab("Conference Destination") +
+  xlab("Meeting (APA Region)") +
   coord_flip() +
   ggtitle("Share of Total CO2e") +
   scale_y_continuous(labels = scales::percent) +
