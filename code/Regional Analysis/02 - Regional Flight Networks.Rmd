@@ -32,17 +32,8 @@ conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
   setDT()
 ```
 
-## Plot Flight Network
-
-### NYC 2018
-```{r Regional NYC Plot}
-# Initialize write to pdf
-pdf(file = paste0(getwd(),"/visualizations/APA Regional Flight Networks.pdf"),
-  width = 8, height = 6)
-
-# Plot a map of the united states:
-map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
-
+## Plot Regional Conferences
+```{r Plot meetings}
 # Get regional destinations
 dests <- list(unique(nyc$`Regional Destination`))
 
@@ -54,6 +45,54 @@ dest.cols.list <- as.list(viridis(lengths(dests), begin = 0.2, alpha = 0.38))
 for (i in 1:length(dest.cols)) {
   names(dest.cols.list)[i] <- dests[[1]][i]
 }
+
+# Initialize write to pdf
+pdf(file = paste0(getwd(),"/visualizations/APA Regional Meeting Map.pdf"),
+  width = 8, height = 6)
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Generate points, colored by APA region
+for (i in 1:lengths(dests)) {
+  
+  points(
+    x = conventions[IATA == dests[[1]][i]]$lon,
+    y = conventions[IATA == dests[[1]][i]]$lat,
+    pch=1, cex = 0.25, lwd = 0.4,
+    col = viridis(lengths(dests), begin = 0.2, alpha = 0.6)[i]
+    )
+  
+}
+ 
+# Labels cities
+ text(
+   x = conventions[IATA %in% names(dest.cols.list) & IATA != "PHL"]$lon,
+   y = conventions[IATA %in% names(dest.cols.list) & IATA != "PHL"]$lat,
+   labels = conventions[IATA %in% names(dest.cols.list) & IATA != "PHL"]$CITY,
+   col = "white", cex = 0.10, pos = 3, offset = 0.10)
+ 
+# Label PHL w/ lower offset
+ text(
+   x = conventions[IATA == "PHL"]$lon,
+   y = conventions[IATA == "PHL"]$lat,
+   labels = conventions[IATA == "PHL"]$CITY,
+   col = "white", cex = 0.10, pos = 1, offset = 0.10)
+ 
+dev.off()
+```
+
+
+## Plot Flight Network
+
+### NYC 2018
+```{r Regional NYC Plot}
+# Initialize write to pdf
+pdf(file = paste0(getwd(),"/visualizations/APA Regional Flight Networks.pdf"),
+  width = 8, height = 6)
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
 
 # Generate points, colored by APA region
 for (i in 1:lengths(dests)) {
