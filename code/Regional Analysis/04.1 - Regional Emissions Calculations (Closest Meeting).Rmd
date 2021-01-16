@@ -30,91 +30,82 @@ conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
 ```{r Prep}
 # Combine corresponding driving indicators
 nyc[, `:=`(Driver = fcase(
-  `Regional Destination` == "JFK", drive.JFK,
-  `Regional Destination` == "ORD", drive.ORD,
-  `Regional Destination` == "PHL", drive.PHL, 
-  `Regional Destination` == "YYZ", drive.YYZ,
-  `Regional Destination` == "MSY", drive.MSY,
-  `Regional Destination` == "SEA", drive.SEA,
-  `Regional Destination` == "LAX", drive.LAX),
+  closestConf == "JFK", drive.JFK,
+  closestConf == "ORD", drive.ORD,
+  closestConf == "PHL", drive.PHL, 
+  closestConf == "YYZ", drive.YYZ,
+  closestConf == "MSY", drive.MSY,
+  closestConf == "SEA", drive.SEA,
+  closestConf == "LAX", drive.LAX),
   
   "Driver Distance" = fcase(
-    `Regional Destination` == "JFK", gdist.JFK,
-    `Regional Destination` == "ORD", gdist.ORD,
-    `Regional Destination` == "PHL", gdist.PHL,
-    `Regional Destination` == "YYZ", gdist.YYZ,
-    `Regional Destination` == "MSY", gdist.MSY,
-    `Regional Destination` == "SEA", gdist.SEA,
-    `Regional Destination` == "LAX", gdist.LAX)
+    closestConf == "JFK", gdist.JFK,
+    closestConf == "ORD", gdist.ORD,
+    closestConf == "PHL", gdist.PHL,
+    closestConf == "YYZ", gdist.YYZ,
+    closestConf == "MSY", gdist.MSY,
+    closestConf == "SEA", gdist.SEA,
+    closestConf == "LAX", gdist.LAX)
   )]
 
 sf[, `:=`(Driver = fcase(
-  `Regional Destination` == "JFK", drive.JFK,
-  `Regional Destination` == "ORD", drive.ORD,
-  `Regional Destination` == "PHL", drive.PHL, 
-  `Regional Destination` == "YYZ", drive.YYZ,
-  `Regional Destination` == "MSY", drive.MSY,
-  `Regional Destination` == "SEA", drive.SEA,
-  `Regional Destination` == "LAX", drive.LAX),
+  closestConf == "JFK", drive.JFK,
+  closestConf == "ORD", drive.ORD,
+  closestConf == "PHL", drive.PHL, 
+  closestConf == "YYZ", drive.YYZ,
+  closestConf == "MSY", drive.MSY,
+  closestConf == "SEA", drive.SEA,
+  closestConf == "LAX", drive.LAX),
   
   "Driver Distance" = fcase(
-    `Regional Destination` == "JFK", gdist.JFK,
-    `Regional Destination` == "ORD", gdist.ORD,
-    `Regional Destination` == "PHL", gdist.PHL,
-    `Regional Destination` == "YYZ", gdist.YYZ,
-    `Regional Destination` == "MSY", gdist.MSY,
-    `Regional Destination` == "SEA", gdist.SEA,
-    `Regional Destination` == "LAX", gdist.LAX)
+    closestConf == "JFK", gdist.JFK,
+    closestConf == "ORD", gdist.ORD,
+    closestConf == "PHL", gdist.PHL,
+    closestConf == "YYZ", gdist.YYZ,
+    closestConf == "MSY", gdist.MSY,
+    closestConf == "SEA", gdist.SEA,
+    closestConf == "LAX", gdist.LAX)
   )]
 
 phl[, `:=`(Driver = fcase(
-  `Regional Destination` == "JFK", drive.JFK,
-  `Regional Destination` == "ORD", drive.ORD,
-  `Regional Destination` == "PHL", drive.PHL, 
-  `Regional Destination` == "YYZ", drive.YYZ,
-  `Regional Destination` == "MSY", drive.MSY,
-  `Regional Destination` == "SEA", drive.SEA,
-  `Regional Destination` == "LAX", drive.LAX),
+  closestConf == "JFK", drive.JFK,
+  closestConf == "ORD", drive.ORD,
+  closestConf == "PHL", drive.PHL, 
+  closestConf == "YYZ", drive.YYZ,
+  closestConf == "MSY", drive.MSY,
+  closestConf == "SEA", drive.SEA,
+  closestConf == "LAX", drive.LAX),
   
   "Driver Distance" = fcase(
-    `Regional Destination` == "JFK", gdist.JFK,
-    `Regional Destination` == "ORD", gdist.ORD,
-    `Regional Destination` == "PHL", gdist.PHL,
-    `Regional Destination` == "YYZ", gdist.YYZ,
-    `Regional Destination` == "MSY", gdist.MSY,
-    `Regional Destination` == "SEA", gdist.SEA,
-    `Regional Destination` == "LAX", gdist.LAX)
+    closestConf == "JFK", gdist.JFK,
+    closestConf == "ORD", gdist.ORD,
+    closestConf == "PHL", gdist.PHL,
+    closestConf == "YYZ", gdist.YYZ,
+    closestConf == "MSY", gdist.MSY,
+    closestConf == "SEA", gdist.SEA,
+    closestConf == "LAX", gdist.LAX)
   )]
 ```
 
 # Test against main analysis
 
-There are slightly different number of people, import main analysis and check 
-observations that are missing.
+Import from original regional analysis which was adjusted according to the main
+analysis.
 
 ```{r Import Main}
-main.nyc <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx", sheet = "NYC 2018") %>% setDT()
+main.nyc <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/Regional Analysis/APA Regional Emissions (Analysis).xlsx", sheet = "NYC 2018") %>% setDT()
 
 # Merge to check, frequency
 merge.test <- merge(nyc,
-  main.nyc[, .(location, lat, lon, Frequency)],
-  by = c("location", "lat", "lon"), all.x = TRUE)
+  main.nyc[, .(ATTENDEE_STATUS, location, lat, lon, `Frequency Adj`)],
+  by = c("ATTENDEE_STATUS", "location", "lat", "lon"), all.x = TRUE)
 
-sum(merge.test$Frequency.y, na.rm = TRUE)
-sum(merge.test$Frequency.x, na.rm = TRUE)
+sum(merge.test$`Frequency Adj`, na.rm = TRUE)
+sum(merge.test$Frequency, na.rm = TRUE)
 
-# Replace mismatched frequency w/ main analysis
-# ## (since this was edited for some mislabeled data)
-# 
-# merge.test[Frequency.x != Frequency.y & !is.na(Frequency.y)]$Frequency.x <- merge.test[Frequency.x != Frequency.y & !is.na(Frequency.y)]$Frequency.y
-# 
-# # Save finalized analysis dataset
-# nyc.fix <- merge.test[location %in% main.nyc$location][!is.na(Frequency.x)]
+# Fill in 3 missing rows for adjusted freq
+merge.test[is.na(`Frequency Adj`)]$`Frequency Adj` <- 1
 
-# Rename variables
-nyc.fix <- merge.test[, `:=`(
-  Frequency = Frequency.x)][
-    , Frequency.x := NULL]
 
 # Original column names 
 col.order <- c("ATTENDEE_STATUS", "CITY", "STATE", "COUNTRY",	"location",	"lon",
@@ -123,56 +114,37 @@ col.order <- c("ATTENDEE_STATUS", "CITY", "STATE", "COUNTRY",	"location",	"lon",
   "drive.YYZ", "drive.LAX",	"ICAO",	"IATA", "Airport Name",	"City",	"Country",
   "Altitude",	"Latitude",	"Longitude", "airport_dist_meters", "gdist.SEA",
   "drive.SEA", "APA.region", "CnumMinDistance", "closestConf",
-  "Regional Destination", "Footprint", "Offset", "Driver", "Driver Distance")
+  "Regional Destination", "FootprintcC", "OffsetcC", "Driver", "Driver Distance")
 
 # Reorder columns
-setcolorder(nyc.fix, col.order)
-setnames(nyc.fix, old = "Frequency.y", new = "Frequency Adjusted")
+setcolorder(merge.test, col.order)
+setnames(merge.test, old = "Frequency Adj", new = "Frequency Adjusted")
 ```
 
 ```{r Import Main SF}
-main.sf <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/APA Emissions All Locations (Analysis).xlsx", sheet = "SF 2019") %>% setDT()
+main.sf <- read_excel("C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/Regional Analysis/APA Regional Emissions (Analysis).xlsx", sheet = "SF 2019") %>% setDT()
 
 # Merge to check, frequency
 merge.test.sf <- merge(sf,
-  main.sf[, .(location, lat, lon, Frequency)],
-  by = c("location", "lat", "lon"), all.x = TRUE)
+  main.sf[, .(ATTENDEE_STATUS, location, lat, lon, `Frequency Adj`)],
+  by = c("ATTENDEE_STATUS", "location", "lat", "lon"), all.x = TRUE)
 
-sum(merge.test.sf$Frequency.y, na.rm = TRUE)
-sum(merge.test.sf$Frequency.x, na.rm = TRUE)
-
-
-
-# Replace mismatched frequency w/ main analysis 
-## (since this was edited for some mislabeled data)
-
-# merge.test.sf[Frequency.x != Frequency.y]$Frequency.x <- merge.test.sf[Frequency.x != Frequency.y]$Frequency.y
-
-# Save finalized analysis dataset remove row of 10 people for "Karachi, VA US"
-## Mislabel
-# 
-# sf.fix <- merge.test.sf[!is.na(Frequency.x)][location != "Karachi, VA, US"]
-# sum(sf.fix$Frequency.x)
-
-
-# Rename variables
-sf.fix <- merge.test.sf[, `:=`(
-  Frequency = Frequency.x)][
-    , Frequency.x := NULL]
+sum(merge.test.sf$`Frequency Adj`, na.rm = TRUE)
+sum(merge.test.sf$Frequency, na.rm = TRUE)
 
 # Reorder columns
-setcolorder(sf.fix, col.order)
-setnames(sf.fix, old = "Frequency.y", new = "Frequency Adjusted")
+setcolorder(merge.test.sf, col.order)
+setnames(merge.test.sf, old = "Frequency Adj", new = "Frequency Adjusted")
 ```
 
 
 ## Export
 ```{r Export Data}
-final.sets <- list("NYC 2018" = nyc.fix,
-                   "SF 2019"  = sf.fix,
+final.sets <- list("NYC 2018" = merge.test,
+                   "SF 2019"  = merge.test.sf,
                    "PHL 2020" = phl,
                    "Convention Centers" = conventions)
 
 write.xlsx(final.sets,
-           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Regional Emissions (Prepped).xlsx")
+           file = "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/GeoData/Regional Analysis/APA Regional Emissions (Closest Conf Prepped).xlsx")
 ```
