@@ -1,0 +1,125 @@
+---
+title: "05.1 - Regional Emissions Plots (Closest Conf)"
+author: "Alec Stashevsky"
+date: "1/16/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+library(readxl)
+library(openxlsx)
+library(maps)
+library(rgeos)
+library(maptools)
+library(geosphere)
+library(viridis)
+library(gridExtra)
+library(grid)
+library(plyr)
+library(scales)
+rm(list = ls()) # Clean R Environment
+```
+
+
+## Import Regional Analysis Workbook
+```{r Import}
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Analysis/Regional Analysis/APA Regional Emissions (Closest Conf Analysis).xlsx"
+
+plot.data.raw <- read_excel(path.in, sheet = "R Plot Data") %>% setDT()
+conventions <- read_xlsx(path.in, sheet = "Convention Centers") %>%
+  setDT()
+
+# Merge on City Names
+plot.data <- merge(plot.data.raw, conventions[, .(IATA, CITY)],
+  by.x = "Regional Meeting",
+  by.y = "IATA", all.x = TRUE)
+
+plot.data[order(`Attendance Base`)]
+
+# Combine APA Region and destination city
+plot.data[, `:=`(Region = paste0(CITY, " (", `APA Region`, ")"),
+  perc.drive = 100 * Drivers/Attendance)]
+
+plot.data$Region <- factor(plot.data$Region, levels = c("Toronto (1)",
+  "New York City (2)", "Philadelphia (3)", "Chicago (4)", "New Orleans (5)",
+   "Los Angeles (6)", "Seattle (7)" )
+  )
+
+# Melt to stack drivers and flyers
+attend.data <- melt(plot.data, id.vars = c("Region", "Attendance Base"),
+  measure.vars = c("Drivers", "Flyers"), variable.name = "Transport Mode",
+  value.name = "Attendance")
+
+# Melt to stack emissions share
+emissions.share <- melt(plot.data, id.vars = c("Region", "Attendance Base"),
+  measure.vars = c("Share of Driving Emissions", "Share of Flying Emissions"),
+  variable.name = "Transport Mode",
+  value.name = "Emissions Share")
+
+emissions.share[`Transport Mode` == "Share of Driving Emissions"]$ `Transport Mode` <- "Driving Emissions"
+
+emissions.share[`Transport Mode` == "Share of Flying Emissions"]$ `Transport Mode` <- "Flying Emissions"
+
+```
+
+## Plot
+
+### New York Base
+```{r Plots NYC}
+# Initialize write to pdf
+pdf(file = paste0(getwd(),"/visualizations/APA Regional Emissions Plots (Closest Conf).pdf"),
+  width = 8, height = 6)
+
+# Attendance by Region
+ggplot(attend.data, aes(x = fct_rev(Region),
+  y = Attendance, fill = `Transport Mode`)) +
+  geom_col() +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Meeting (APA Region)") +
+  ylab("Number of Attendees") +
+  coord_flip() +
+  scale_fill_brewer(palette = "Pastel2") +
+  # scale_y_continuous(n.breaks = 4) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1.1)) +
+  ggtitle("Attendance by Regional Meeting")
+
+# Total Emissions by Region
+ggplot(plot.data, aes(x = fct_rev(Region),
+  y = `Total CO2e Emissions (Kg)`/1000)) +
+  geom_col() +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Meeting (APA Region)") +
+  ylab("Metric Tons CO2") +
+  coord_flip() +
+  ggtitle("CO2 Emissions by Regional Meeting")
+
+# Per Capita Emissions by Region
+ggplot(plot.data, aes(x = fct_rev(Region),
+  y = `CO2e per Capita (Kg)`/1000)) +
+  geom_col() +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Meeting (APA Region)") +
+  ylab("Metric Tons CO2 per Capita") +
+  coord_flip() +
+  ggtitle("Per Capita CO2 Emissions by Regional Meeting")
+
+# Emissions Share
+ggplot(emissions.share, aes(x = fct_rev(Region),
+  y = `Emissions Share`,
+  fill = `Transport Mode`)) +
+  
+  geom_col(position="fill") +
+  geom_hline(yintercept = 0.5, lwd = 0.5) +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Meeting (APA Region)") +
+  coord_flip() +
+  ggtitle("Share of Total CO2e") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Pastel2")
+
+dev.off()
+```
+
