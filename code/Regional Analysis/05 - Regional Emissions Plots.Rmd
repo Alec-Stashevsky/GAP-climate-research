@@ -75,6 +75,17 @@ pdf(file = paste0(getwd(),"/visualizations/APA Regional Emissions Plots.pdf"),
 
 # Attendance by Region
 ggplot(attend.data, aes(x = fct_rev(Region),
+  y = Attendance)) +
+  geom_col() +
+  facet_wrap(~`Attendance Base`) +
+  xlab("Meeting (APA Region)") +
+  ylab("Number of Attendees") +
+  coord_flip() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1.1)) +
+  ggtitle("Attendance by Regional Meeting")
+
+# Attendance by Region and Transport Mode
+ggplot(attend.data, aes(x = fct_rev(Region),
   y = Attendance, fill = `Transport Mode`)) +
   geom_col() +
   facet_wrap(~`Attendance Base`) +
