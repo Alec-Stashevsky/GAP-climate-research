@@ -325,6 +325,23 @@ lapply(names(dest.cols.list),
 # Add Flight plot aesthetics
 title(main = "APA Regional Conference Flight Network (SF 2019 Base)",
       col.main = "white", cex.main = 0.75)
+```
+
+# San Francisco No Legend
+```{r SF Regional Flight Network}
+
+# Plot a map of the united states:
+map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+
+# Plots flight paths
+lapply(names(dest.cols.list),
+  flight.network,
+  data = sf,
+  endpts = TRUE)
+
+# Add Flight plot aesthetics
+title(main = "APA Regional Conference Flight Network (SF 2019 Base No Legend)",
+      col.main = "white", cex.main = 0.75)
 
 dev.off()
 ```
