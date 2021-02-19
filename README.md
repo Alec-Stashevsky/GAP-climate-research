@@ -1,6 +1,6 @@
 # GAP Climate Research Overview
 
-Update: Please find the publication for this topic [here!](https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2775666#figure-table-tab)
+### Update: Please find the publication for this topic [here!](https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2775666#figure-table-tab)
 
 
 This repository holds the analysis for quantifying avoided carbon impacts from the virtualization of the American Psychiatric Association's (APA) 2020 Annual Meeting. 
