@@ -9,7 +9,7 @@ The APA is the largest psychiatric organization in the world at almost 40 thousa
 
 In the wake of the Coronavirus pandemic the APA canceled the 2020 Annual Meeting at the Pennsylvania Convention Center scheduled for April 25-29 and announced a virtual substitute, the *2020 APA On Demand online CME Product.*
 
-This research is currently in progress and supported by a team of psychiatrists at the think tank [Group for the Advancement of Psychiatry (GAP)](https://ourgap.org) and myself.
+This research was supported by a team of psychiatrists at the think tank [Group for the Advancement of Psychiatry (GAP)](https://ourgap.org) and myself.
 
 Below are some visualizations of our flight-network model for APA Annual Meeting attendees. Each point represents a single attendee's origin. The curved lines represent the geodesic distance or the path *as the crow flies* that each attendee will take to arrive at the meeting's location. This pathway is the shortest arc between two points on the great circle, or Earth's surface. The width and intensity of the arc represents the relative frequency that pathway is traveled.
 
