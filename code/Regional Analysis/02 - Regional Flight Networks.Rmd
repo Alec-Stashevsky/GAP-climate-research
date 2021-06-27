@@ -51,7 +51,7 @@ pdf(file = paste0(getwd(),"/visualizations/APA Regional Meeting Map.pdf"),
   width = 8, height = 6)
 
 # Plot a map of the united states:
-map("world", col="grey20", fill=TRUE, bg="black", lwd=0.1)
+map("world", col = "grey20", fill = TRUE, bg = "black", lwd = 0.1)
 
 # Generate points, colored by APA region
 for (i in 1:lengths(dests)) {
@@ -59,25 +59,50 @@ for (i in 1:lengths(dests)) {
   points(
     x = conventions[IATA == dests[[1]][i]]$lon,
     y = conventions[IATA == dests[[1]][i]]$lat,
-    pch=1, cex = 0.25, lwd = 0.4,
-    col = viridis(lengths(dests), begin = 0.2, alpha = 0.6)[i]
+    pch = 3, cex = 0.2, lwd = 0.4,
+    col = viridis(lengths(dests), begin = 0.25, alpha = 1)[i]
     )
   
 }
  
+# Cities to plot separately to space text
+custom.text <- c("JFK", "ORD", "PHL")
+
 # Labels cities
- text(
-   x = conventions[IATA %in% names(dest.cols.list) & IATA != "PHL"]$lon,
-   y = conventions[IATA %in% names(dest.cols.list) & IATA != "PHL"]$lat,
-   labels = conventions[IATA %in% names(dest.cols.list) & IATA != "PHL"]$CITY,
-   col = "white", cex = 0.10, pos = 3, offset = 0.10)
+text(
+  x = conventions[IATA %in% names(dest.cols.list) &
+      !(IATA %in% custom.text)]$lon,
+  y = conventions[IATA %in% names(dest.cols.list) &
+      !(IATA %in% custom.text)]$lat,
+  labels = conventions[IATA %in% names(dest.cols.list) &
+      !(IATA %in% custom.text)]$CITY,
+  col = "white", cex = 0.21, pos = 3, offset = 0.15
+  )
  
-# Label PHL w/ lower offset
- text(
-   x = conventions[IATA == "PHL"]$lon,
-   y = conventions[IATA == "PHL"]$lat,
-   labels = conventions[IATA == "PHL"]$CITY,
-   col = "white", cex = 0.10, pos = 1, offset = 0.10)
+# Add Chicago
+text(
+  x = conventions[IATA == "ORD"]$lon,
+  y = conventions[IATA == "ORD"]$lat,
+  labels = conventions[IATA == "ORD"]$CITY,
+  col = "white", cex = 0.21, pos = 3, offset = 0.15
+  )
+
+# Add NYC
+text(
+  x = conventions[IATA == "JFK"]$lon + 3.2,
+  y = conventions[IATA == "JFK"]$lat,
+  labels = "New York", # remove "City" from the data label
+  col = "white", cex = 0.21, pos = 3, offset = 0.15
+  )
+ 
+# Add PHL
+text(
+  x = conventions[IATA == "PHL"]$lon - 3,
+  y = conventions[IATA == "PHL"]$lat,
+  labels = conventions[IATA == "PHL"]$CITY,
+  col = "white", cex = 0.21, pos = 1, offset = 0.15
+  )
+
  
 dev.off()
 ```
