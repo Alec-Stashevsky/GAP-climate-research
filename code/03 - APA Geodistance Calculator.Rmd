@@ -25,7 +25,7 @@ path.convention <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Ge
 nyc.raw <- read_excel(path.in, sheet = "NYC 2018") %>% setDT()
 sf.raw <- read_excel(path.in, sheet = "SF 2019") %>% setDT()
 phl.raw <- read_excel(path.in, sheet = "PHL 2020") %>% setDT()
-conventions <- read_xlsx(path.convention, sheet = "Convention Centers") %>%
+conventions <- read_xlsx(path.convention) %>%
   setDT()
 ```
 

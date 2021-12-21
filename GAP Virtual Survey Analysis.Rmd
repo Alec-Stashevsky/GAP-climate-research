@@ -1,0 +1,384 @@
+---
+title: "GAP 2020 Virutal Survey Analysis"
+author: "Alec Stashevsky"
+date: "7/25/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+
+```
+
+```{r}
+path.in <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Data/GAP Virtual Meeting Survey/GAP 2020 Virtual Meeting Survey.csv"
+
+# Build Headers
+survey.data.headers <- fread(path.in, nrows = 2, header = FALSE)
+headers <- trimws(paste(survey.data.headers[1], survey.data.headers[2]))
+
+q.nums <- c(
+  "Q1", "Q2", "Q3", "Q4", "Q5",
+  "Q6a", "Q6b", "Q6c", "Q6d", "Q6e", "Q6f", "Q6g", "Q6h", "Q6i",
+  "Q7a", "Q7b", "Q7c", "Q7d", "Q7e", "Q7f", "Q7g",
+  "Q8a", "Q8b", "Q8c", "Q8d", "Q8e", "Q8f", "Q8g",
+  "Q9a", "Q9b",
+  "Q10", "Q11",
+  "Q12a", "Q12b",
+  "Q13a", "Q13b", "Q13c",
+  "Q14", "Q15", "Q16", "Q17", "Q18", "Q19", "Q20", "Q21", "Q22", "Q23",
+  "Q24", "Q25", "Q26"
+  )
+
+col.names <- c(headers[1:9], q.nums)
+
+# Import rest of data
+survey.data <- fread(path.in, skip = 2, header = FALSE)
+
+# Add headers
+colnames(survey.data) <- col.names
+
+# Drop missing columns
+survey.data[, `:=`(
+  `First Name` = NULL,
+  `Last Name` = NULL,
+  `Custom Data 1` = NULL,
+  `Email Address` = NULL
+  )]
+
+
+```
+
+
+To answer Beth's question #1 we need survey question 7 columns 20 - 26. And compare if there are different overall trends from
+
+Q 15: Do you consider yourself to have any close personal friendships with GAP members? (col 44)
+
+to the end of the columns
+
+```{r Beth Question 1}
+columns_to_compare <- c(
+  "Q9a", "Q10", "Q12a", "Q13a", "Q13b", "Q13c",
+  colnames(survey.data)[43:ncol(survey.data)]
+)
+ 
+# Get proportions over all data
+prop.list <- vector(mode = "list", length(12))
+j <- 1
+for (i in columns_to_compare) {
+  
+  prop.list[[j]] <- prop.table(table(survey.data[, get(i)]))
+  j <- j + 1
+}
+
+prop.list <- lapply(prop.list, data.table)
+names(prop.list) <- columns_to_compare
+
+# Now look over those who answer "Much worse" for any part of questions 7
+q7.survey.data <- survey.data[
+  Q7a == "(1) Much worse" | Q7b == "(1) Much worse" | Q7c == "(1) Much worse" | 
+    Q7d == "(1) Much worse" | Q7e == "(1) Much worse" | Q7f == "(1) Much worse" | 
+    Q7g == "(1) Much worse"
+    ]
+
+# Get proportions over subset of data who answered much worse to any of Q7
+prop.list.q7 <- vector(mode = "list", length(columns_to_compare))
+j <- 1
+for (i in columns_to_compare) {
+  
+  prop.list.q7[[j]] <- prop.table(table(q7.survey.data[, get(i)]))
+  j <- j + 1
+  
+}
+
+prop.list.q7 <- lapply(prop.list.q7, data.table)
+
+compare.list.q7 <- vector(mode = "list", length(columns_to_compare))
+for (i in 1:length(prop.list)) {
+  compare.list.q7[[i]] <- merge(
+    prop.list[[i]],
+    prop.list.q7[[i]],
+    by = "V1", all = TRUE
+    )
+  
+  colnames(compare.list.q7[[i]]) <- c("Answer", "All Respondents", "'Much Worse' on Q7")
+  
+  compare.list.q7[[i]][, Difference := `All Respondents` - `'Much Worse' on Q7`]
+}
+
+# Add questions numbers for names 
+names(compare.list.q7) <- columns_to_compare
+```
+
+
+```{r Beth Question 2}
+# Now look over those who answer "Much worse" for any part of questions 8
+q8.survey.data <- survey.data[
+  Q8a == "(1) Much worse" | Q8b == "(1) Much worse" | Q8c == "(1) Much worse" | 
+    Q8d == "(1) Much worse" | Q8e == "(1) Much worse" | Q8f == "(1) Much worse" | 
+    Q8g == "(1) Much worse"
+    ]
+
+# Get proportions over subset of data who answered much worse to any of Q8
+prop.list.q8 <- vector(mode = "list", length(columns_to_compare))
+j <- 1
+for (i in columns_to_compare) {
+  
+  prop.list.q8[[j]] <- prop.table(table(q8.survey.data[, get(i)]))
+  j <- j + 1
+  
+}
+
+prop.list.q8 <- lapply(prop.list.q8, data.table)
+
+compare.list.q8 <- vector(mode = "list", length(columns_to_compare))
+for (i in 1:length(prop.list)) {
+  compare.list.q8[[i]] <- merge(
+    prop.list[[i]],
+    prop.list.q8[[i]],
+    by = "V1", all = TRUE
+    )
+  
+  colnames(compare.list.q8[[i]]) <- c("Answer", "All Respondents", "'Much Worse' on Q8")
+  
+  compare.list.q8[[i]][, Difference := `All Respondents` - `'Much Worse' on Q8`]
+}
+
+# Add questions numbers for names 
+names(compare.list.q8) <- columns_to_compare
+```
+
+
+```{r Beth Question 3}
+# Get proportions over subset of data who answered much worse to any of Q10
+prop.list.q10 <- vector(mode = "list", length(columns_to_compare))
+j <- 1
+for (i in columns_to_compare) {
+  
+  prop.list.q10[[j]] <- prop.table(
+    table(survey.data[Q10 == "Higher productivity", get(i)])
+    )
+  
+  j <- j + 1
+  
+}
+
+prop.list.q10 <- lapply(prop.list.q10, data.table)
+
+compare.list.q10 <- vector(mode = "list", length(columns_to_compare))
+for (i in 1:length(prop.list)) {
+  compare.list.q10[[i]] <- merge(
+    prop.list[[i]],
+    prop.list.q10[[i]],
+    by = "V1", all = TRUE
+    )
+  
+  colnames(compare.list.q10[[i]]) <- c("Answer",
+    "All Respondents", "'Higher Productivity' on Q10")
+  
+  compare.list.q10[[i]][, Difference := `All Respondents` - `'Higher Productivity' on Q10`]
+}
+
+# Add questions numbers for names 
+names(compare.list.q10) <- columns_to_compare
+```
+
+
+```{r Beth Question 8}
+columns_to_compare.65.older <- columns_to_compare[columns_to_compare != "Q21"]
+# Get responses for those 65 and older
+survey.data.65.older <- survey.data[Q21 %in% c("65 to 74", "75 or older")]
+
+# Get proportions over subset of data who answered 65 or older
+prop.list.q21 <- vector(mode = "list", length(columns_to_compare.65.older))
+j <- 1
+for (i in columns_to_compare.65.older) {
+  
+  prop.list.q21[[j]] <- prop.table(
+    table(survey.data.65.older[, get(i)])
+    )
+  
+  j <- j + 1
+  
+}
+
+prop.list.q21 <- lapply(prop.list.q21, data.table)
+
+prop.list[names(prop.list) != "Q21"]
+
+compare.list.q21 <- vector(mode = "list", length(columns_to_compare.65.older))
+for (i in 1:length(columns_to_compare.65.older)) {
+  compare.list.q21[[i]] <- merge(
+    prop.list[names(prop.list) != "Q21"][[i]],
+    prop.list.q21[[i]],
+    by = "V1", all = TRUE
+    )
+  
+  colnames(compare.list.q21[[i]]) <- c("Answer",
+    "All Respondents", "Over Age 65")
+  
+  compare.list.q21[[i]][, Difference := `All Respondents` - `Over Age 65`]
+}
+
+# Add questions numbers for names 
+names(compare.list.q21) <- columns_to_compare.65.older
+```
+
+
+```{r Beth Question 9}
+columns_to_compare.sex <- columns_to_compare[columns_to_compare != "Q22"]
+
+# Get responses for different sex
+survey.data.male <- survey.data[Q22 == "Male"]
+survey.data.female <- survey.data[Q22 == "Female"]
+
+# Get proportions over subset of data males
+prop.list.q22.male <- vector(mode = "list", length(columns_to_compare.sex))
+j <- 1
+for (i in columns_to_compare.sex) {
+  
+  prop.list.q22.male[[j]] <- prop.table(
+    table(survey.data.male[, get(i)])
+    )
+  
+  j <- j + 1
+  
+}
+
+prop.list.q22.male <- lapply(prop.list.q22.male, data.table)
+
+# Get proportions over subset of data female
+prop.list.q22.female <- vector(mode = "list", length(columns_to_compare.sex))
+j <- 1
+for (i in columns_to_compare.sex) {
+  
+  prop.list.q22.female[[j]] <- prop.table(
+    table(survey.data.female[, get(i)])
+    )
+  
+  j <- j + 1
+  
+}
+
+prop.list.q22.female <- lapply(prop.list.q22.female, data.table)
+
+# Compare all three
+compare.list.q22 <- vector(mode = "list", length(columns_to_compare.sex))
+for (i in 1:length(columns_to_compare.sex)) {
+  compare.list.q22[[i]] <- merge(
+    merge(
+      prop.list[names(prop.list) != "Q22"][[i]],
+      prop.list.q22.male[[i]],
+      by = "V1", all = TRUE
+      ),
+    prop.list.q22.female[[i]],
+    by = "V1", all = TRUE
+    )
+  
+  colnames(compare.list.q22[[i]]) <- c(
+    "Answer", "All Respondents", "Male", "Female"
+    )
+}
+
+# Add questions numbers for names 
+names(compare.list.q22) <- columns_to_compare.sex
+```
+
+
+```{r Beth Question 10}
+columns_to_compare.member15 <- columns_to_compare[columns_to_compare != "Q23"]
+
+# Get responses for those members of gap over 15 years
+survey.data.member15 <- survey.data[Q23 == "Over 15 years"]
+
+# Get proportions over subset of data who are members over 15 years
+prop.list.q23 <- vector(mode = "list", length(columns_to_compare.member15))
+j <- 1
+for (i in columns_to_compare.member15) {
+  
+  prop.list.q23[[j]] <- prop.table(
+    table(survey.data.member15[, get(i)])
+    )
+  
+  j <- j + 1
+  
+}
+
+prop.list.q23 <- lapply(prop.list.q23, data.table)
+
+compare.list.q23 <- vector(mode = "list", length(columns_to_compare.member15))
+for (i in 1:length(columns_to_compare.member15)) {
+  compare.list.q23[[i]] <- merge(
+    prop.list[names(prop.list) != "Q23"][[i]],
+    prop.list.q23[[i]],
+    by = "V1", all = TRUE
+    )
+  
+  colnames(compare.list.q23[[i]]) <- c("Answer",
+    "All Respondents", "Member over 15 years")
+  
+  compare.list.q23[[i]][, Difference := `All Respondents` - `Member over 15 years`]
+}
+
+# Add questions numbers for names 
+names(compare.list.q23) <- columns_to_compare.member15
+```
+
+
+```{r Beth Question 11}
+columns_to_compare.northeast <- columns_to_compare[columns_to_compare != "Q24"]
+
+# Get responses for those from Northeast
+survey.data.northeast <- survey.data[Q24 == "Northeast"]
+
+# Get proportions over subset of data who are from Northeast
+prop.list.q24 <- vector(mode = "list", length(columns_to_compare.northeast))
+j <- 1
+for (i in columns_to_compare.northeast) {
+  
+  prop.list.q24[[j]] <- prop.table(
+    table(survey.data.northeast[, get(i)])
+    )
+  
+  j <- j + 1
+  
+}
+
+prop.list.q24 <- lapply(prop.list.q24, data.table)
+
+compare.list.q24 <- vector(mode = "list", length(columns_to_compare.northeast))
+for (i in 1:length(columns_to_compare.northeast)) {
+  compare.list.q24[[i]] <- merge(
+    prop.list[names(prop.list) != "Q24"][[i]],
+    prop.list.q24[[i]],
+    by = "V1", all = TRUE
+    )
+  
+  colnames(compare.list.q24[[i]]) <- c("Answer",
+    "All Respondents", "From Northeast")
+  
+  compare.list.q24[[i]][, Difference := `All Respondents` - `From Northeast`]
+}
+
+# Add questions numbers for names 
+names(compare.list.q24) <- columns_to_compare.northeast
+```
+
+
+```{r Export}
+library(openxlsx)
+
+path.out <- "C:/Users/Alec/Documents/GAP Research/GAP Climate Research/Data/GAP Virtual Meeting Survey/Survey Analysis Output/"
+
+# Write each question to a separate workbook
+write.xlsx(compare.list.q7,  paste0(path.out, "Beth's Question 1.xlsx"), overwrite = TRUE)
+write.xlsx(compare.list.q8,  paste0(path.out, "Beth's Question 2.xlsx"), overwrite = TRUE)
+write.xlsx(compare.list.q10, paste0(path.out, "Beth's Question 3.xlsx"), overwrite = TRUE)
+write.xlsx(compare.list.q21, paste0(path.out, "Beth's Question 8.xlsx"), overwrite = TRUE)
+write.xlsx(compare.list.q22, paste0(path.out, "Beth's Question 9.xlsx"), overwrite = TRUE)
+write.xlsx(compare.list.q23, paste0(path.out, "Beth's Question 10.xlsx"), overwrite = TRUE)
+write.xlsx(compare.list.q24, paste0(path.out, "Beth's Question 11.xlsx"), overwrite = TRUE)
+```
+
