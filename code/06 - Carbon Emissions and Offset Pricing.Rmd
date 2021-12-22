@@ -335,11 +335,11 @@ for (dest in historical.meetings){
     })
   }
   
-  assign(paste0("emissions.ny.", dest), 
-         data.table(cbind(Footprint = resp.footprint,
-               Offset = resp.offsets
-               )
-         ))
+  assign(paste0("emissions.ny.", dest),
+    data.table(cbind(Footprint = resp.footprint,
+      Offset = resp.offsets
+      ))
+    )
 }
 
 # Merge data together
